@@ -32,29 +32,60 @@ const MessageFlow = (() => {
   const cardData = new WeakMap();
 
   /* ---------- データ読み込み ---------- */
+  // Googleスプレッドシートの「掲載用」シートを「ウェブに公開」した CSV の URL。
+  // 設定すると、スプレッドシートでチェックを入れるだけでサイトに反映される（数分の遅れあり）。
+  // 空欄のとき・読み込みに失敗したときは data/messages.json を表示する。
+  const SHEET_CSV_URL = '';
+
   const cache = new Map();
 
+  // 形をそろえ、本文が空のものは除外
+  function normalize(data) {
+    if (!Array.isArray(data)) throw new Error('メッセージデータが配列ではありません');
+    return data
+      .map((m, i) => ({
+        id: m && m.id != null ? m.id : i + 1,
+        name: String((m && m.name) || '').trim(),
+        message: String((m && m.message) || '').replace(/\r\n?/g, '\n').trim(),
+      }))
+      .filter((m) => m.message !== '');
+  }
+
+  function fetchJson(src) {
+    return fetch(src, { cache: 'no-cache' }).then((res) => {
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json();
+    });
+  }
+
+  // 公開CSVを読み込み、js/csv.js でメッセージ配列に変換
+  // （「掲載」列が含まれていれば、チェック済みの行だけになる）
+  function fetchSheet(url) {
+    if (!window.CsvToJson) return Promise.reject(new Error('js/csv.js が読み込まれていません'));
+    return fetch(url, { cache: 'no-store' })
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.text();
+      })
+      .then((text) => {
+        // 見出し行だけ（まだ掲載するものがない）なら 0 件
+        if (window.CsvToJson.parseCsv(text).length < 2) return [];
+        return window.CsvToJson.convert(text);
+      });
+  }
+
   function loadMessages(src) {
-    if (!cache.has(src)) {
-      const p = fetch(src, { cache: 'no-cache' })
-        .then((res) => {
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          return res.json();
-        })
-        .then((data) => {
-          if (!Array.isArray(data)) throw new Error('messages.json が配列ではありません');
-          // 形をそろえ、本文が空のものは除外
-          return data
-            .map((m, i) => ({
-              id: m && m.id != null ? m.id : i + 1,
-              name: String((m && m.name) || '').trim(),
-              message: String((m && m.message) || '').replace(/\r\n?/g, '\n').trim(),
-            }))
-            .filter((m) => m.message !== '');
-        });
-      cache.set(src, p);
+    const key = SHEET_CSV_URL || src;
+    if (!cache.has(key)) {
+      const p = SHEET_CSV_URL
+        ? fetchSheet(SHEET_CSV_URL).catch((err) => {
+            console.warn('スプレッドシートを読み込めなかったため messages.json を表示します', err);
+            return fetchJson(src);
+          })
+        : fetchJson(src);
+      cache.set(key, p.then(normalize));
     }
-    return cache.get(src);
+    return cache.get(key);
   }
 
   /* ---------- 小道具 ---------- */
