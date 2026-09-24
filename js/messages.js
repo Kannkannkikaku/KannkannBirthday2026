@@ -13,7 +13,8 @@
 
    しくみ:
      .lane > .track > .set(A) + .set(B)
-     ・.set の幅は「枚数 × --slot-w」で常に同じ → .track 全体の50%＝1セット分
+     ・カード同士のすき間はランダムだが、1セット内の合計は「枚数 × --gap-avg」に固定
+       → .set の幅は常に同じ → .track 全体の50%＝1セット分
      ・CSS の @keyframes で translateX(0 → -50%) を繰り返す（JSでは座標を動かさない）
      ・1周するたびに（animationiteration）先頭のセットAを末尾へ移し、
        次のメッセージで中身を入れ替える。
@@ -102,6 +103,25 @@ const MessageFlow = (() => {
 
   const rand = (min, max) => min + Math.random() * (max - min);
 
+  /**
+   * カード同士のすき間を n 個ランダムに作る（整数px）
+   * ・1つ1つは平均の 0.2〜2.8 倍くらいでばらつく
+   * ・合計は必ず「n × 平均」ぴったり → セットの幅が毎回同じになり、ループが途切れない
+   */
+  function randomGaps(n, avg) {
+    const min = Math.round(avg * 0.2);
+    const total = Math.round(n * avg);
+    const raw = Array.from({ length: n }, () => rand(min, avg * 2.8));
+    // 最小値は保ったまま、合計が total になるよう伸び縮みさせる
+    const extra = raw.reduce((s, g) => s + (g - min), 0) || 1;
+    const gaps = raw.map((g) => Math.round(min + ((g - min) * (total - n * min)) / extra));
+    // 四捨五入で生じた誤差を、いちばん広いすき間で調整
+    const diff = total - gaps.reduce((s, g) => s + g, 0);
+    const widest = gaps.indexOf(Math.max(...gaps));
+    gaps[widest] += diff;
+    return gaps;
+  }
+
   /* ---------- カード生成 ---------- */
   // 本文・名前は textContent で入れる（innerHTML は使わない＝XSS対策）
   function createCard(msg) {
@@ -137,7 +157,7 @@ const MessageFlow = (() => {
   class Lane {
     /**
      * @param {Array} queue    このレーンが担当するメッセージ
-     * @param {Object} opts    perLane, duration, jitter, reduced
+     * @param {Object} opts    perLane, duration, jitter, gapAvg, reduced
      */
     constructor(queue, opts) {
       this.queue = queue;
@@ -187,17 +207,18 @@ const MessageFlow = (() => {
       return set;
     }
 
-    // セットの中身を作り直す。カードごとに縦横の位置を少しずらす
+    // セットの中身を作り直す。カードごとに縦位置と右側のすき間をランダムにする
     fillSet(set, items) {
       const frag = document.createDocumentFragment();
-      const { jitter, reduced } = this.opts;
-      items.forEach((msg) => {
+      const { jitter, reduced, gapAvg } = this.opts;
+      const gaps = reduced ? null : randomGaps(items.length, gapAvg);
+      items.forEach((msg, i) => {
         const slot = document.createElement('div');
         slot.className = 'slot';
         const card = createInteractiveCard(msg);
         if (!reduced) {
+          slot.style.setProperty('--gap', `${gaps[i]}px`);
           card.style.setProperty('--dy', `${rand(-jitter, jitter).toFixed(0)}px`);
-          card.style.setProperty('--dx', `${rand(-jitter * 0.35, jitter * 0.35).toFixed(0)}px`);
         }
         slot.appendChild(card);
         frag.appendChild(slot);
@@ -259,6 +280,8 @@ const MessageFlow = (() => {
       const perLane = isPc ? opts.perLane : opts.perLaneSp;
       // スマホはレーン間が狭いので縦ずれを控えめに
       const jitter = isPc ? opts.jitter : Math.round(opts.jitter * 0.6);
+      // カード同士の平均のすき間（css の --gap-avg。PC・スマホ・トップの縮小版で異なる）
+      const gapAvg = parseFloat(getComputedStyle(container).getPropertyValue('--gap-avg')) || 40;
 
       // 各レーンへ均等に振り分け
       // レーン数と色数が同じ（3）だと1レーンが1色になってしまうため、
@@ -276,6 +299,7 @@ const MessageFlow = (() => {
           perLane,
           duration: opts.durations[i % opts.durations.length],
           jitter,
+          gapAvg,
           reduced: mqReduced.matches,
         });
         frag.appendChild(lane.el);

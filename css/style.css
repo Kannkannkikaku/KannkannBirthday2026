@@ -29,7 +29,7 @@
   --header-h: 56px;
   --bottom-nav-h: 64px;
   --card-w: 260px;        /* スマホのカード幅 */
-  --slot-w: 290px;        /* カード1枚ぶんの枠（カード幅＋すき間） */
+  --gap-avg: 30px;        /* カード同士の平均のすき間（実際の間隔はJSでばらつかせる） */
 
   --font: "M PLUS Rounded 1c", "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif,
           "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji";
@@ -38,7 +38,7 @@
 @media (min-width: 768px) {
   :root {
     --card-w: 360px;
-    --slot-w: 400px;
+    --gap-avg: 40px;
   }
 }
 
@@ -548,11 +548,11 @@ main {
 
 /* トップページ用の小さいカード */
 .flow--compact {
-  --slot-w: 270px;
+  --card-w: 240px;
+  --gap-avg: 30px;
 }
 
 .flow--compact .card {
-  --card-w: 240px;
   padding: 14px 18px;
 }
 
@@ -568,7 +568,8 @@ main {
 /* =========================================================
    メッセージが流れるエリア
    ・.lane > .track > .set × 2 > .slot > .card
-   ・.set の幅は「カード枚数 × --slot-w」で常に一定
+   ・.slot の幅は「カード幅＋すき間」。すき間はJSでランダムにするが、
+     1セット内の合計は「枚数 × --gap-avg」にそろえるので .set の幅は常に一定
      → 2セット並べて translateX(0 → -50%) で継ぎ目なくループ
    ========================================================= */
 .flow {
@@ -622,12 +623,12 @@ main {
 
 .slot {
   flex: none;
-  width: var(--slot-w);
+  width: calc(var(--card-w) + var(--gap, var(--gap-avg)));
   display: flex;
-  justify-content: center;
+  justify-content: flex-start; /* カードは左寄せ。右側がすき間になる */
 }
 
-/* カードごとの「ずれ」（JSで --dx / --dy をランダムに設定） */
+/* カードごとの縦の「ずれ」（JSで --dy をランダムに設定） */
 .slot .card {
   transform: translate(var(--dx, 0px), var(--dy, 0px));
 }
