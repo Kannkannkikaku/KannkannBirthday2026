@@ -10,8 +10,13 @@
 
   /* ---------- 設定 ---------- */
 
-  // 誕生日（月・日）。日本時間の0:00〜23:59を「当日」とみなす
-  const BIRTHDAY = { month: 11, day: 19 };
+  // 誕生日（年・月・日）。日付はすべて日本時間で判定する
+  //   〜誕生日の前日         … カウントダウン
+  //   誕生日〜HB_UNTIL_DAY日 … Happy Birthday!（駅広告の掲出期間）
+  //   それ以降               … お礼のメッセージ
+  const BIRTHDAY = { year: 2026, month: 11, day: 19 };
+  const HB_UNTIL_DAY = 22; // Happy Birthday! を表示する最後の日（誕生日と同じ月）
+  const THANKS_TEXT = 'たくさんのお祝い\nありがとうございました！'; // \n の位置で改行
 
   // お知らせ（新しいものを上に書く）。text はそのまま文字として表示される
   const NEWS = [
@@ -101,9 +106,19 @@
   /* ---------- カウントダウン ---------- */
   const JST_OFFSET = 9 * 60 * 60 * 1000;
 
+  // 表示確認用：URL に ?preview-date=2026-11-19 （時刻付きなら 2026-11-18T23:59:50）を付けると、
+  // その日時（日本時間）から時計が進んでいるものとして表示する
+  const previewOffset = (() => {
+    const q = new URLSearchParams(location.search).get('preview-date');
+    const m = q && q.match(/^(\d{4})-(\d{2})-(\d{2})(?:T(\d{2}):(\d{2})(?::(\d{2}))?)?$/);
+    if (!m) return 0;
+    const [, y, mo, d, h = '12', mi = '0', s = '0'] = m;
+    return Date.UTC(+y, +mo - 1, +d, +h, +mi, +s) - (Date.now() + JST_OFFSET);
+  })();
+
   // 「日本時間の今」を UTC の値として持つ Date を返す（getUTC〇〇 で日本時間が取れる）
   function nowInJst() {
-    return new Date(Date.now() + JST_OFFSET);
+    return new Date(Date.now() + JST_OFFSET + previewOffset);
   }
 
   function initCountdown() {
@@ -113,6 +128,7 @@
     const label = root.querySelector('.countdown__label');
     const nums = root.querySelector('.countdown__nums');
     const hb = root.querySelector('.countdown__hb');
+    const thanks = root.querySelector('.countdown__thanks');
     const el = {
       d: root.querySelector('[data-unit="d"]'),
       h: root.querySelector('[data-unit="h"]'),
@@ -123,27 +139,37 @@
     const dd = String(BIRTHDAY.day).padStart(2, '0');
     const pad = (n) => String(n).padStart(2, '0');
 
-    const tick = () => {
-      const jst = nowInJst();
-      const y = jst.getUTCFullYear();
-      const isToday = jst.getUTCMonth() + 1 === BIRTHDAY.month && jst.getUTCDate() === BIRTHDAY.day;
+    // 誕生日 0:00 と、お礼に切り替わる日（HB_UNTIL_DAY の翌日）0:00（どちらも日本時間）
+    const birthdayStart = Date.UTC(BIRTHDAY.year, BIRTHDAY.month - 1, BIRTHDAY.day);
+    const thanksStart = Date.UTC(BIRTHDAY.year, BIRTHDAY.month - 1, HB_UNTIL_DAY + 1);
 
-      if (isToday) {
-        // 当日は Happy Birthday! に切り替え
-        label.textContent = `今日は誕生日（${mm}/${dd}）！`;
-        nums.hidden = true;
-        hb.hidden = false;
+    // 表示の切り替え（label / nums / hb / thanks のどれを出すか）
+    const show = (part, labelText) => {
+      label.hidden = !labelText;
+      label.textContent = labelText || '';
+      nums.hidden = part !== 'nums';
+      hb.hidden = part !== 'hb';
+      thanks.hidden = part !== 'thanks';
+    };
+    thanks.textContent = THANKS_TEXT;
+
+    const tick = () => {
+      const now = nowInJst().getTime();
+
+      if (now >= thanksStart) {
+        // 駅広告の掲出期間が終わったらお礼
+        show('thanks', '');
+        return;
+      }
+      if (now >= birthdayStart) {
+        // 誕生日当日〜掲出最終日は Happy Birthday!
+        const isToday = now < birthdayStart + 86400000;
+        show('hb', isToday ? `今日は誕生日（${mm}/${dd}）！` : `【誕生日：${mm}/${dd}】`);
         return;
       }
 
-      // 次の誕生日（日本時間 0:00）。今年の分が過ぎていたら来年
-      let target = Date.UTC(y, BIRTHDAY.month - 1, BIRTHDAY.day);
-      if (target <= jst.getTime()) target = Date.UTC(y + 1, BIRTHDAY.month - 1, BIRTHDAY.day);
-
-      const diff = Math.max(0, Math.floor((target - jst.getTime()) / 1000));
-      label.textContent = `【誕生日：${mm}/${dd}】まで`;
-      nums.hidden = false;
-      hb.hidden = true;
+      const diff = Math.floor((birthdayStart - now) / 1000);
+      show('nums', `【誕生日：${mm}/${dd}】まで`);
       el.d.textContent = Math.floor(diff / 86400);
       el.h.textContent = pad(Math.floor((diff % 86400) / 3600));
       el.m.textContent = pad(Math.floor((diff % 3600) / 60));

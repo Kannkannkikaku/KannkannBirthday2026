@@ -86,6 +86,11 @@ a {
   color: var(--accent);
 }
 
+/* hidden 属性は display を指定した要素にも必ず効かせる */
+[hidden] {
+  display: none !important;
+}
+
 .visually-hidden {
   position: absolute !important;
   width: 1px;
@@ -1016,6 +1021,16 @@ body.is-paused .track {
   font-weight: 800;
   letter-spacing: 0.04em;
   animation: hb-pop 1.6s ease-in-out infinite;
+}
+
+/* 掲出期間終了後のお礼 */
+.countdown__thanks {
+  margin: 4px 0;
+  white-space: pre-line; /* js/main.js の THANKS_TEXT の \n で改行 */
+  color: var(--accent);
+  font-size: clamp(18px, 5.2vw, 26px);
+  font-weight: 800;
+  line-height: 1.6;
 }
 
 @keyframes hb-pop {

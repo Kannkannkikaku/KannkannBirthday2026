@@ -30,6 +30,8 @@ scripts/sample_responses.csv 変換の練習用サンプル
 | --- | --- |
 | お知らせを追加する | `js/main.js` の `NEWS` 配列（上に行くほど新しい） |
 | 誕生日の日付を変える | `js/main.js` の `BIRTHDAY` |
+| カウントダウン欄の切り替え | `js/main.js` の `HB_UNTIL_DAY`（Happy Birthday! を出す最後の日）と `THANKS_TEXT`（その翌日から出すお礼の文）。〜11/18 カウントダウン → 11/19〜22 Happy Birthday! → 11/23〜 お礼 |
+| 特定の日の表示を確認する | トップページのURLの末尾に `?preview-date=2026-11-19`（時刻まで指定するなら `?preview-date=2026-11-18T23:59:50`）を付けて開く |
 | 駅広告イラストを差し替える | `images/stations/駅広告横浜.png`・`駅広告東京.png`・`駅広告愛知.png` を同じファイル名で上書き |
 | 掲出場所マップを差し替える | `images/stations/駅広告横浜マップ.png`・`駅広告東京マップ.png`・`駅広告愛知マップ.png` を同じファイル名で上書き |
 | トップの駅広告スライドショー | 画像は上と同じファイルを共有。並び順は `index.html` の `carousel__slide` の順、切り替え間隔は `js/main.js` の `CAROUSEL_INTERVAL`（ミリ秒） |
