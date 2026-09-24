@@ -8,6 +8,7 @@
 
    ・列名を指定しない場合は、見出しに「ハンドル／名前／name」を含む列を名前、
      「メッセージ／message」を含む列を本文として自動で選ぶ
+   ・名前の後ろに「さん」を付ける（すでに「さん・様・ちゃん」などで終わっていればそのまま）
    ・「掲載」列があれば、そこにチェック（TRUE / ○ / OK など）が入った行だけを出力
    ・セル内の改行、"" でエスケープされたダブルクォート、絵文字に対応
    ========================================================= */
@@ -97,11 +98,13 @@
     return -1;
   }
 
-  // ハンドル名を「@xxxx」の形にそろえる
+  // 名前を「〇〇さん」の形にそろえる（すでに敬称が付いていればそのまま）
+  const HONORIFICS = ['さん', '様', 'さま', 'サマ', 'ちゃん', 'くん', '君'];
+
   function normalizeName(raw) {
-    let name = String(raw || '').trim().replace(/^＠/, '@');
-    if (name && !name.startsWith('@')) name = '@' + name;
-    return name;
+    const name = String(raw || '').trim();
+    if (!name || HONORIFICS.some((h) => name.endsWith(h))) return name;
+    return name + 'さん';
   }
 
   // 掲載チェック列の既定の列名（スプレッドシートに自分で追加する列）
