@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>メッセージ変換ツール</title>
+  <!-- 運営用の変換ツール（Node.js がなくてもブラウザだけで変換できる） -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;700;800&display=swap">
+  <!-- プレビューのカードをサイトと同じ見た目にするため、サイトのCSSを読み込む -->
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    body { padding-bottom: 0; }
+    .tool { width: min(100% - 32px, 900px); margin: 24px auto; }
+    .tool h1 { margin: 0 0 8px; color: var(--accent); font-size: 22px; }
+    .tool label { display: block; margin: 14px 0 4px; font-weight: 700; }
+    .tool input[type="text"] { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 8px; font: inherit; }
+    .tool details { margin-top: 12px; }
+    .tool summary { cursor: pointer; font-weight: 700; }
+    .tool-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+    .tool-actions .btn[disabled] { opacity: 0.4; pointer-events: none; }
+    .summary { margin: 16px 0 0; font-weight: 700; }
+    .summary.error { color: #c0392b; }
+    .summary .warn { display: block; margin-top: 6px; color: #b36b00; }
+    .preview-title { margin: 28px 0 0; text-align: center; color: var(--accent); font-size: 18px; }
+  </style>
+</head>
+<body>
+  <div class="tool">
+    <section class="panel">
+      <h1>メッセージ変換ツール</h1>
+      <p>
+        スプレッドシートを「ファイル → ダウンロード → カンマ区切り形式（.csv）」で書き出し、そのCSVを選んでください。<br>
+        「<b>掲載</b>」列にチェックが入った行だけを変換します。
+      </p>
+
+      <label for="file">CSVファイル</label>
+      <input type="file" id="file" accept=".csv,text/csv">
+
+      <details>
+        <summary>列名を指定する（通常は不要）</summary>
+        <label for="name-col">名前の列名（空欄なら自動判定）</label>
+        <input type="text" id="name-col" placeholder="例：Xのハンドル名">
+        <label for="message-col">本文の列名（空欄なら自動判定）</label>
+        <input type="text" id="message-col" placeholder="例：お祝いメッセージ">
+        <label for="approve-col">掲載チェックの列名（空欄なら「掲載」）</label>
+        <input type="text" id="approve-col" placeholder="例：掲載">
+      </details>
+
+      <div class="tool-actions">
+        <button class="btn" type="button" id="convert">変換してプレビュー</button>
+        <button class="btn" type="button" id="download" disabled>messages.json をダウンロード</button>
+      </div>
+
+      <p class="summary" id="result" role="status"></p>
+    </section>
+
+    <h2 class="preview-title" id="preview-title" hidden>サイトでの見え方（掲載される順番はサイト側でシャッフルされます）</h2>
+    <div class="grid" id="preview"></div>
+  </div>
+
+  <script src="csv_to_json.js"></script>
+  <script>
+    (() => {
+      const $ = (id) => document.getElementById(id);
+      const COLORS = ['pink', 'blue', 'purple'];
+      let json = '';
+
+      // サイトと同じ構造のカードを作る（textContent で入れるのでタグは文字のまま表示）
+      function card(msg, i) {
+        const el = document.createElement('article');
+        el.className = 'card card--' + COLORS[i % COLORS.length];
+        el.style.cursor = 'default';
+        const text = document.createElement('p');
+        text.className = 'card__text';
+        text.textContent = msg.message;
+        el.appendChild(text);
+        if (msg.name) {
+          const name = document.createElement('p');
+          name.className = 'card__name';
+          name.textContent = msg.name;
+          el.appendChild(name);
+        }
+        return el;
+      }
+
+      function showError(message) {
+        json = '';
+        $('download').disabled = true;
+        $('result').className = 'summary error';
+        $('result').textContent = 'エラー：' + message;
+        $('preview').replaceChildren();
+        $('preview-title').hidden = true;
+      }
+
+      $('convert').addEventListener('click', async () => {
+        const file = $('file').files[0];
+        if (!file) {
+          showError('CSVファイルを選んでください。');
+          return;
+        }
+        try {
+          const text = await file.text(); // UTF-8 として読み込む
+          const r = CsvToJson.convertDetailed(text, {
+            nameCol: $('name-col').value || undefined,
+            messageCol: $('message-col').value || undefined,
+            approveCol: $('approve-col').value || undefined,
+          });
+          json = CsvToJson.toJson(r.messages);
+
+          // 集計
+          $('result').className = 'summary';
+          $('result').textContent =
+            `掲載 ${r.messages.length} 件（回答 ${r.total} 件 / 未チェック ${r.skippedUnapproved} 件 / 本文なし ${r.skippedEmpty} 件）`;
+          if (!r.approveColFound) {
+            const warn = document.createElement('span');
+            warn.className = 'warn';
+            warn.textContent = '⚠ 「掲載」列が見つからないため、全件を対象にしました。確認してから載せる場合は、スプレッドシートに「掲載」列を追加してください。';
+            $('result').appendChild(warn);
+          }
+
+          // プレビュー
+          const frag = document.createDocumentFragment();
+          r.messages.forEach((m, i) => frag.appendChild(card(m, i)));
+          $('preview').replaceChildren(frag);
+          $('preview-title').hidden = r.messages.length === 0;
+          $('download').disabled = r.messages.length === 0;
+        } catch (err) {
+          showError(err.message);
+        }
+      });
+
+      $('download').addEventListener('click', () => {
+        const blob = new Blob([json], { type: 'application/json' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'messages.json';
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+      });
+    })();
+  </script>
+</body>
+</html>

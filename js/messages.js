@@ -1,0 +1,363 @@
+/* =========================================================
+   メッセージカードを流す処理
+   ---------------------------------------------------------
+   使い方（HTML側）:
+     <div class="flow" data-message-flow
+          data-src="data/messages.json"   … 読み込むJSON
+          data-lanes="3"                  … PCのレーン数
+          data-lanes-sp="2"               … スマホのレーン数
+          data-per-lane="10"              … PCで1セットに並べる枚数（上限）
+          data-per-lane-sp="8"            … スマホで1セットに並べる枚数（上限）
+          data-durations="60,70,65"       … 各レーンが1周する秒数
+          data-jitter="40"></div>          … 縦ずれの最大px（PC）
+
+   しくみ:
+     .lane > .track > .set(A) + .set(B)
+     ・.set の幅は「枚数 × --slot-w」で常に同じ → .track 全体の50%＝1セット分
+     ・CSS の @keyframes で translateX(0 → -50%) を繰り返す（JSでは座標を動かさない）
+     ・1周するたびに（animationiteration）先頭のセットAを末尾へ移し、
+       次のメッセージで中身を入れ替える。
+       ループの瞬間に画面に見えているのはセットBの頭なので、
+       B を先頭に回せば見た目は一切変わらず、A（画面外）だけ入れ替わる。
+     → 数百件あっても DOM 上のカードは「レーン数 × 2セット × 上限枚数」だけ
+   ========================================================= */
+const MessageFlow = (() => {
+  'use strict';
+
+  const COLORS = ['pink', 'blue', 'purple'];
+  const mqPc = window.matchMedia('(min-width: 768px)');
+  const mqReduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  // カード要素 → メッセージデータ（モーダル表示用）
+  const cardData = new WeakMap();
+
+  /* ---------- データ読み込み ---------- */
+  const cache = new Map();
+
+  function loadMessages(src) {
+    if (!cache.has(src)) {
+      const p = fetch(src, { cache: 'no-cache' })
+        .then((res) => {
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          return res.json();
+        })
+        .then((data) => {
+          if (!Array.isArray(data)) throw new Error('messages.json が配列ではありません');
+          // 形をそろえ、本文が空のものは除外
+          return data
+            .map((m, i) => ({
+              id: m && m.id != null ? m.id : i + 1,
+              name: String((m && m.name) || '').trim(),
+              message: String((m && m.message) || '').replace(/\r\n?/g, '\n').trim(),
+            }))
+            .filter((m) => m.message !== '');
+        });
+      cache.set(src, p);
+    }
+    return cache.get(src);
+  }
+
+  /* ---------- 小道具 ---------- */
+  // 配列をシャッフル（フィッシャー–イェーツ法。元の配列は変更しない）
+  function shuffle(list) {
+    const a = list.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  const rand = (min, max) => min + Math.random() * (max - min);
+
+  /* ---------- カード生成 ---------- */
+  // 本文・名前は textContent で入れる（innerHTML は使わない＝XSS対策）
+  function createCard(msg) {
+    const card = document.createElement('article');
+    card.className = `card card--${COLORS[msg.color % COLORS.length]}`;
+
+    const text = document.createElement('p');
+    text.className = 'card__text';
+    text.textContent = msg.message;
+    card.appendChild(text);
+
+    if (msg.name) {
+      const name = document.createElement('p');
+      name.className = 'card__name';
+      name.textContent = msg.name;
+      card.appendChild(name);
+    }
+    return card;
+  }
+
+  // クリック/タップ/Enter でモーダルが開くカード
+  function createInteractiveCard(msg) {
+    const card = createCard(msg);
+    card.tabIndex = 0;
+    card.setAttribute('role', 'button');
+    card.setAttribute('aria-haspopup', 'dialog');
+    card.dataset.messageCard = '';
+    cardData.set(card, msg);
+    return card;
+  }
+
+  /* ---------- 1本のレーン ---------- */
+  class Lane {
+    /**
+     * @param {Array} queue    このレーンが担当するメッセージ
+     * @param {Object} opts    perLane, duration, jitter, reduced
+     */
+    constructor(queue, opts) {
+      this.queue = queue;
+      this.cursor = 0;
+      this.opts = opts;
+
+      this.el = document.createElement('div');
+      this.el.className = 'lane';
+      this.track = document.createElement('div');
+      this.track.className = 'track';
+      this.el.appendChild(this.track);
+
+      if (opts.reduced) {
+        // 動きを減らす設定：自動で流さず、全件を1列に並べて横スクロールで読む
+        this.track.appendChild(this.buildSet(queue));
+        return;
+      }
+
+      this.track.style.setProperty('--dur', `${opts.duration}s`);
+      this.track.append(this.buildSet(this.nextBatch()), this.buildSet(this.nextBatch()));
+
+      // 1周ごとにセットを入れ替える
+      this.track.addEventListener('animationiteration', (e) => {
+        if (e.target === this.track) this.rotate();
+      });
+    }
+
+    // 次に並べる perLane 件を取り出す（足りなければ先頭に戻って繰り返す）
+    nextBatch() {
+      const out = [];
+      for (let i = 0; i < this.opts.perLane; i++) {
+        if (this.cursor >= this.queue.length) {
+          // 全件を一巡したら先頭へ。件数が多ければ並べ替えて変化をつける
+          this.cursor = 0;
+          if (this.queue.length > this.opts.perLane * 2) this.queue = shuffle(this.queue);
+        }
+        out.push(this.queue[this.cursor]);
+        this.cursor++;
+      }
+      return out;
+    }
+
+    buildSet(items) {
+      const set = document.createElement('div');
+      set.className = 'set';
+      this.fillSet(set, items);
+      return set;
+    }
+
+    // セットの中身を作り直す。カードごとに縦横の位置を少しずらす
+    fillSet(set, items) {
+      const frag = document.createDocumentFragment();
+      const { jitter, reduced } = this.opts;
+      items.forEach((msg) => {
+        const slot = document.createElement('div');
+        slot.className = 'slot';
+        const card = createInteractiveCard(msg);
+        if (!reduced) {
+          card.style.setProperty('--dy', `${rand(-jitter, jitter).toFixed(0)}px`);
+          card.style.setProperty('--dx', `${rand(-jitter * 0.35, jitter * 0.35).toFixed(0)}px`);
+        }
+        slot.appendChild(card);
+        frag.appendChild(slot);
+      });
+      set.replaceChildren(frag);
+    }
+
+    // ループの瞬間：画面に見えているセットB（2番目）を先頭へ回し、
+    // 画面外へ出たセットAを新しいメッセージで作り直す
+    rotate() {
+      const first = this.track.firstElementChild;
+      this.track.appendChild(first);
+      this.fillSet(first, this.nextBatch());
+    }
+  }
+
+  /* ---------- 流れるエリア全体 ---------- */
+  async function mount(container) {
+    const ds = container.dataset;
+    const nums = (v, def) => (v ? v.split(',').map(Number).filter((n) => n > 0) : def);
+    const opts = {
+      src: ds.src || 'data/messages.json',
+      lanes: Number(ds.lanes) || 3,
+      lanesSp: Number(ds.lanesSp) || 2,
+      perLane: Number(ds.perLane) || 10,
+      perLaneSp: Number(ds.perLaneSp) || 8,
+      durations: nums(ds.durations, [60, 70, 65]),
+      jitter: Number(ds.jitter) || 40,
+    };
+
+    const setStatus = (text) => {
+      const p = document.createElement('p');
+      p.className = 'flow__status';
+      p.textContent = text;
+      container.replaceChildren(p);
+    };
+
+    setStatus('メッセージを読み込み中…');
+
+    let messages;
+    try {
+      messages = await loadMessages(opts.src);
+    } catch (err) {
+      console.error(err);
+      setStatus('メッセージを読み込めませんでした。時間をおいて再読み込みしてください。');
+      return null;
+    }
+    if (messages.length === 0) {
+      setStatus('メッセージは準備中です。');
+      return null;
+    }
+
+    // 読み込むたびにシャッフルし、色（ピンク→水色→紫）を順番に割り当てる
+    const list = shuffle(messages).map((m, i) => ({ ...m, color: i % COLORS.length }));
+
+    const render = () => {
+      const isPc = mqPc.matches;
+      const laneCount = Math.min(isPc ? opts.lanes : opts.lanesSp, list.length);
+      const perLane = isPc ? opts.perLane : opts.perLaneSp;
+      // スマホはレーン間が狭いので縦ずれを控えめに
+      const jitter = isPc ? opts.jitter : Math.round(opts.jitter * 0.6);
+
+      // 各レーンへ均等に振り分け
+      const buckets = Array.from({ length: laneCount }, () => []);
+      list.forEach((m, i) => buckets[i % laneCount].push(m));
+
+      const frag = document.createDocumentFragment();
+      buckets.forEach((queue, i) => {
+        const lane = new Lane(queue, {
+          perLane,
+          duration: opts.durations[i % opts.durations.length],
+          jitter,
+          reduced: mqReduced.matches,
+        });
+        frag.appendChild(lane.el);
+      });
+      container.replaceChildren(frag);
+    };
+
+    render();
+    // PC⇔スマホの切り替えや、動きを減らす設定の変更時に作り直す
+    mqPc.addEventListener('change', render);
+    mqReduced.addEventListener('change', render);
+
+    return { messages: list };
+  }
+
+  /* ---------- 一覧（グリッド）表示 ---------- */
+  function renderGrid(grid, messages) {
+    const frag = document.createDocumentFragment();
+    messages.forEach((m) => frag.appendChild(createInteractiveCard(m)));
+    grid.replaceChildren(frag);
+  }
+
+  function initGridToggle(btn, flow, controller) {
+    const grid = document.getElementById(btn.getAttribute('aria-controls'));
+    if (!grid || !controller) {
+      btn.hidden = true;
+      return;
+    }
+    let built = false;
+
+    btn.addEventListener('click', () => {
+      const toGrid = grid.hidden;
+      if (toGrid && !built) {
+        renderGrid(grid, controller.messages);
+        built = true;
+      }
+      grid.hidden = !toGrid;
+      flow.hidden = toGrid;
+      btn.setAttribute('aria-pressed', String(toGrid));
+      btn.textContent = toGrid ? '流れる表示に戻る' : '一覧で読む';
+      window.scrollTo({ top: 0 });
+    });
+  }
+
+  /* ---------- モーダル ---------- */
+  let modal = null;
+
+  function getModal() {
+    if (modal) return modal;
+
+    const dialog = document.createElement('dialog');
+    dialog.className = 'modal';
+    dialog.setAttribute('aria-label', 'お祝いメッセージ');
+
+    const closeBtn = document.createElement('button');
+    closeBtn.type = 'button';
+    closeBtn.className = 'modal__close';
+    closeBtn.setAttribute('aria-label', '閉じる');
+    closeBtn.textContent = '×';
+    // 閉じたら流れを再開
+    const close = () => {
+      if (dialog.open) dialog.close();
+      document.body.classList.remove('is-paused');
+    };
+    closeBtn.addEventListener('click', close);
+
+    // 背景（カードの外側）をクリックしたら閉じる
+    dialog.addEventListener('click', (e) => {
+      if (e.target === dialog) close();
+    });
+    // Escキーで閉じたときも close イベントで再開
+    dialog.addEventListener('close', close);
+
+    dialog.appendChild(closeBtn);
+    document.body.appendChild(dialog);
+    modal = { dialog, closeBtn };
+    return modal;
+  }
+
+  function openModal(msg) {
+    const { dialog, closeBtn } = getModal();
+    const card = createCard(msg);
+    card.classList.add('modal__card');
+    dialog.replaceChildren(closeBtn, card);
+
+    // 表示中は全レーン停止
+    document.body.classList.add('is-paused');
+    if (typeof dialog.showModal === 'function') {
+      dialog.showModal();
+    } else {
+      dialog.setAttribute('open', '');
+    }
+    closeBtn.focus();
+  }
+
+  // カードのクリック・キー操作は document でまとめて受け取る（イベント委譲）
+  function initCardEvents() {
+    document.addEventListener('click', (e) => {
+      const card = e.target.closest('[data-message-card]');
+      if (card && cardData.has(card)) openModal(cardData.get(card));
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      const card = e.target.closest && e.target.closest('[data-message-card]');
+      if (card && cardData.has(card)) {
+        e.preventDefault();
+        openModal(cardData.get(card));
+      }
+    });
+  }
+
+  /* ---------- 起動 ---------- */
+  document.addEventListener('DOMContentLoaded', () => {
+    initCardEvents();
+    document.querySelectorAll('[data-message-flow]').forEach(async (flow) => {
+      const controller = await mount(flow);
+      const btn = document.querySelector(`[data-grid-toggle="${flow.id}"]`);
+      if (btn) initGridToggle(btn, flow, controller);
+    });
+  });
+
+  return { mount, loadMessages };
+})();

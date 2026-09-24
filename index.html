@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>菅叶和さんお誕生日企画2026</title>
+  <meta name="description" content="声優・菅叶和さんのお誕生日（11月19日）をお祝いするファン有志の企画サイトです。ファンの皆さまから集めたお祝いメッセージを掲載しています。">
+
+  <!-- OGP -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="菅叶和さんお誕生日企画2026">
+  <meta property="og:title" content="菅叶和さんお誕生日企画2026">
+  <meta property="og:description" content="声優・菅叶和さんのお誕生日をお祝いするファン企画サイトです。">
+  <meta property="og:url" content="https://kannkannkikaku.github.io/KannkannBirthday2026/">
+  <meta property="og:image" content="https://kannkannkikaku.github.io/KannkannBirthday2026/images/ogp.png">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;700;800&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/main.js" defer></script>
+  <script src="js/messages.js" defer></script>
+</head>
+<body>
+  <!-- 背景装飾（星・花びら） -->
+  <div class="deco" aria-hidden="true">
+    <div class="deco__stars"></div>
+    <span class="deco__sparkle"></span>
+    <span class="deco__sparkle"></span>
+    <span class="deco__sparkle"></span>
+    <span class="deco__sparkle"></span>
+  </div>
+
+  <!-- ヘッダー -->
+  <header class="site-header">
+    <a class="site-logo" href="index.html">菅叶和さんお誕生日企画2026</a>
+    <button class="menu-btn" type="button" aria-expanded="false" aria-controls="site-menu" aria-label="メニューを開く">
+      <span></span><span></span><span></span>
+    </button>
+  </header>
+  <nav id="site-menu" class="site-menu" aria-label="メインメニュー">
+    <ul>
+      <li><a href="index.html" aria-current="page">ホーム</a></li>
+      <li><a href="pages/message/">メッセージ</a></li>
+      <li><a href="pages/illust/">イラスト</a></li>
+      <li><a href="pages/information/">インフォメーション</a></li>
+    </ul>
+  </nav>
+  <div class="menu-overlay"></div>
+
+  <main>
+    <!-- 見出し -->
+    <section class="hero">
+      <h1 class="hero__title"><span>菅叶和さん</span> <span>お誕生日</span><span>おめでとうございます！</span></h1>
+    </section>
+
+    <!-- カウントダウン -->
+    <section class="panel countdown" id="countdown" aria-live="polite">
+      <p class="countdown__label">【誕生日：11/19】まで</p>
+      <p class="countdown__nums">
+        <span class="countdown__unit"><b data-unit="d">--</b><small>日</small></span>
+        <span class="countdown__unit"><b data-unit="h">--</b><small>時間</small></span>
+        <span class="countdown__unit"><b data-unit="m">--</b><small>分</small></span>
+        <span class="countdown__unit"><b data-unit="s">--</b><small>秒</small></span>
+      </p>
+      <p class="countdown__hb" hidden>Happy Birthday!</p>
+    </section>
+
+    <!-- お知らせ（js/main.js の NEWS 配列から表示） -->
+    <section class="panel">
+      <h2 class="panel__title">お知らせ</h2>
+      <ul class="news" id="news-list"></ul>
+    </section>
+
+    <!-- メッセージ（縮小版） -->
+    <section aria-labelledby="top-message-title">
+      <h2 class="pill-title" id="top-message-title">【ファンの皆さまからのお祝いメッセージ】</h2>
+      <div class="flow flow--compact" id="top-flow" data-message-flow
+           data-src="data/messages.json"
+           data-lanes="2" data-lanes-sp="2"
+           data-per-lane="8" data-per-lane-sp="8"
+           data-durations="55,65"
+           data-jitter="20"
+           aria-label="流れるお祝いメッセージ（カードを選ぶと拡大表示）"></div>
+      <div class="section-more">
+        <a class="btn" href="pages/message/">もっと見る</a>
+      </div>
+    </section>
+  </main>
+
+  <!-- フッター -->
+  <footer class="site-footer">
+    <a class="site-footer__x" href="https://x.com/kannkikaku" target="_blank" rel="noopener noreferrer">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+      企画アカウント（X）
+    </a>
+    <small>© 菅叶和誕生日企画 2026</small>
+  </footer>
+
+  <!-- スマホ下部ナビ -->
+  <nav class="bottom-nav" aria-label="ページ切り替え">
+    <a href="pages/message/">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M4 5h16v11H9l-4 3.5V16H4z"/></svg>
+      メッセージ
+    </a>
+    <a href="pages/illust/">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="9" cy="10" r="1.8" fill="currentColor"/><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M4 17l5-4.5 3.5 3 3-2.5 4.5 4"/></svg>
+      イラスト
+    </a>
+    <a href="pages/information/">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M12 11v5.5M12 7.6v.1"/></svg>
+      インフォ
+    </a>
+  </nav>
+</body>
+</html>
