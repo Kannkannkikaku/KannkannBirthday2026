@@ -32,6 +32,7 @@ scripts/sample_responses.csv 変換の練習用サンプル
 | 誕生日の日付を変える | `js/main.js` の `BIRTHDAY` |
 | 駅広告イラストを差し替える | `images/stations/駅広告横浜.png`・`駅広告東京.png`・`駅広告愛知.png` を同じファイル名で上書き |
 | 掲出場所マップを差し替える | `images/stations/駅広告横浜マップ.png`・`駅広告東京マップ.png`・`駅広告愛知マップ.png` を同じファイル名で上書き |
+| トップの駅広告スライドショー | 画像は上と同じファイルを共有。並び順は `index.html` の `carousel__slide` の順、切り替え間隔は `js/main.js` の `CAROUSEL_INTERVAL`（ミリ秒） |
 | 掲出場所・日程・イラストレーター名を変える | `pages/illust/index.html`・`pages/information/index.html` の各 `station-card` |
 | OGP画像を差し替える | `images/ogp.png` を上書き（1200×630px） |
 | 流れる速さ・レーン数を変える | `pages/message/index.html` の `data-durations`（1周の秒数）、`data-lanes` など |

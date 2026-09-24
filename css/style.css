@@ -790,8 +790,170 @@ body.is-paused .track {
 /* =========================================================
    トップページ
    ========================================================= */
+/* ---------- 駅広告スライドショー ---------- */
+.carousel {
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+@media (min-width: 768px) {
+  .carousel {
+    margin-top: 20px;
+  }
+}
+
+.carousel__viewport {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 1414 / 1000;
+  background: rgba(255, 255, 255, 0.4);
+}
+
+@media (min-width: 768px) {
+  .carousel__viewport {
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(90, 74, 94, 0.15);
+  }
+}
+
+.carousel__track {
+  display: flex;
+  height: 100%;
+  /* JS で --index（何枚目か）を変えて横にずらす */
+  transform: translateX(calc(var(--index, 0) * -100%));
+  transition: transform 0.6s ease;
+}
+
+.carousel__track.is-jumping {
+  transition: none; /* ループの端から反対の端へ瞬間移動するとき */
+}
+
+.carousel__slide {
+  flex: 0 0 100%;
+  height: 100%;
+}
+
+.carousel__slide img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+/* 左右のタップ領域：画像の左右それぞれ約3割 */
+.carousel__nav {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 1;
+  width: 30%;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.carousel__nav--prev {
+  left: 0;
+  justify-content: flex-start;
+}
+
+.carousel__nav--next {
+  right: 0;
+  justify-content: flex-end;
+}
+
+/* 矢印（白い丸の中に ‹ ›） */
+.carousel__nav span {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.75);
+  box-shadow: 0 2px 8px rgba(90, 74, 94, 0.2);
+  transition: background 0.2s, transform 0.2s;
+}
+
+.carousel__nav span::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border-top: 2.5px solid var(--accent);
+  border-right: 2.5px solid var(--accent);
+}
+
+.carousel__nav--prev span::before {
+  transform: translateX(2px) rotate(-135deg);
+}
+
+.carousel__nav--next span::before {
+  transform: translateX(-2px) rotate(45deg);
+}
+
+.carousel__nav:hover span {
+  background: #fff;
+}
+
+.carousel__nav:active span {
+  transform: scale(0.9);
+}
+
+.carousel__nav:focus-visible {
+  outline: none;
+}
+
+.carousel__nav:focus-visible span {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* 何枚目かを示すドット */
+.carousel__dots {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.carousel__dots button {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.carousel__dots button::before {
+  content: "";
+  display: block;
+  width: 9px;
+  height: 9px;
+  margin: auto;
+  border-radius: 50%;
+  background: rgba(255, 79, 154, 0.3);
+  transition: background 0.2s, transform 0.2s;
+}
+
+.carousel__dots button[aria-current="true"]::before {
+  background: var(--accent);
+  transform: scale(1.25);
+}
+
+.carousel__dots button:focus-visible {
+  outline: 2px solid var(--accent);
+  border-radius: 50%;
+}
+
 .hero {
-  padding: 32px 16px 8px;
+  padding: 24px 16px 8px;
   text-align: center;
 }
 
@@ -1015,6 +1177,10 @@ body.is-paused .track {
 
   .slot .card {
     transform: none;
+  }
+
+  .carousel__track {
+    transition: none;
   }
 
   .petal,

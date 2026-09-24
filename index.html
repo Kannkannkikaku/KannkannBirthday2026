@@ -56,6 +56,28 @@
   <div class="menu-overlay"></div>
 
   <main>
+    <!-- 駅広告スライドショー（js/main.js の initCarousel で自動切り替え・左右タップで移動）
+         画像は images/stations/ の同名ファイルを差し替え。並び順はここに書いた順 -->
+    <section class="carousel" aria-roledescription="carousel" aria-label="駅広告イラスト">
+      <div class="carousel__viewport">
+        <div class="carousel__track">
+          <div class="carousel__slide" role="group" aria-roledescription="slide" aria-label="JR横浜駅の駅広告">
+            <img src="images/stations/駅広告横浜.png" alt="JR横浜駅の駅広告イラスト（イラスト：ノギさん）" width="1414" height="1000">
+          </div>
+          <div class="carousel__slide" role="group" aria-roledescription="slide" aria-label="JR山手線 東京駅の駅広告">
+            <img src="images/stations/駅広告東京.png" alt="JR山手線 東京駅の駅広告イラスト（イラスト：〆さん）" width="1414" height="1000">
+          </div>
+          <div class="carousel__slide" role="group" aria-roledescription="slide" aria-label="JR東海 名古屋駅の駅広告">
+            <img src="images/stations/駅広告愛知.png" alt="JR東海 名古屋駅の駅広告イラスト（イラスト：じんさん）" width="1414" height="1000">
+          </div>
+        </div>
+        <!-- 左右のタップ領域（画像の左右それぞれ約3割） -->
+        <button class="carousel__nav carousel__nav--prev" type="button" aria-label="前の駅広告"><span aria-hidden="true"></span></button>
+        <button class="carousel__nav carousel__nav--next" type="button" aria-label="次の駅広告"><span aria-hidden="true"></span></button>
+      </div>
+      <div class="carousel__dots"></div>
+    </section>
+
     <!-- 見出し -->
     <section class="hero">
       <h1 class="hero__title"><span>菅叶和さん</span> <span>お誕生日</span><span>おめでとうございます！</span></h1>
