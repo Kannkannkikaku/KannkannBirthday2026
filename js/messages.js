@@ -35,7 +35,8 @@ const MessageFlow = (() => {
   // Googleスプレッドシートの「掲載用」シートを「ウェブに公開」した CSV の URL。
   // 設定すると、スプレッドシートでチェックを入れるだけでサイトに反映される（数分の遅れあり）。
   // 空欄のとき・読み込みに失敗したときは data/messages.json を表示する。
-  const SHEET_CSV_URL = '';
+  const SHEET_CSV_URL =
+    'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0SyaftCDA7AcyWKP4jvP1vMd_7V3jKsxBO_ADEYpH787EG9fHVDkHcQOdN37VrxscdVpFPdNJJY5z/pub?gid=0&single=true&output=csv';
 
   const cache = new Map();
 
