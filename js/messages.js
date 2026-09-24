@@ -261,8 +261,14 @@ const MessageFlow = (() => {
       const jitter = isPc ? opts.jitter : Math.round(opts.jitter * 0.6);
 
       // 各レーンへ均等に振り分け
+      // レーン数と色数が同じ（3）だと1レーンが1色になってしまうため、
+      // 色はレーンの中での順番とレーン番号から決め直す
       const buckets = Array.from({ length: laneCount }, () => []);
-      list.forEach((m, i) => buckets[i % laneCount].push(m));
+      list.forEach((m, i) => {
+        const lane = i % laneCount;
+        const pos = buckets[lane].length;
+        buckets[lane].push({ ...m, color: (pos + lane) % COLORS.length });
+      });
 
       const frag = document.createDocumentFragment();
       buckets.forEach((queue, i) => {
