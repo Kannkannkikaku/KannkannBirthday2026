@@ -1184,6 +1184,96 @@ body.is-paused .track {
   }
 }
 
+/* 場所・日程（インフォメーション） */
+.station-card__info {
+  max-width: 560px;
+  margin: 14px auto 0;
+  text-align: left;
+  font-size: 14px;
+}
+
+.station-card__info > div {
+  display: flex;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px dashed var(--accent-soft);
+}
+
+.station-card__info > div:last-child {
+  border-bottom: 1px dashed var(--accent-soft);
+}
+
+.station-card__info dt {
+  flex: none;
+  min-width: 2.5em;
+  color: var(--accent);
+  font-weight: 800;
+}
+
+.station-card__info dd {
+  margin: 0;
+  font-weight: 700;
+}
+
+/* 場所の詳しい説明 */
+.station-card__detail {
+  display: block;
+  margin-top: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.7;
+  opacity: 0.85;
+}
+
+/* マップ画像：タップ・クリックで元の大きさの画像を別タブで開く */
+.station-card__zoom {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+  cursor: zoom-in;
+}
+
+.station-card__zoom-hint {
+  display: block;
+  margin-top: 6px;
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+@media (min-width: 768px) {
+  .station-card__zoom-hint {
+    display: none; /* PCでは十分な大きさで見えるので案内は出さない */
+  }
+}
+
+/* ※注意書き（改札外＝水色／改札内＝ピンク） */
+.station-card__caution {
+  display: inline-block;
+  margin: 14px 0 0;
+  padding: 6px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.6;
+}
+
+@media (min-width: 768px) {
+  .station-card__caution {
+    padding: 6px 14px;
+    font-size: 13px;
+  }
+}
+
+.station-card__caution--free {
+  background: #e3f5fb;
+  color: var(--blue-text);
+}
+
+.station-card__caution--ticket {
+  background: #ffe8f1;
+  color: var(--pink-text);
+}
+
 
 /* =========================================================
    動きを減らす設定の人向け

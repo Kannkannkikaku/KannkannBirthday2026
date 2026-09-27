@@ -60,28 +60,77 @@
     </div>
 
     <!-- 駅ごとの掲出場所マップ（画像は images/stations/ の同名ファイルを差し替え） -->
+    <!-- 注意書き：改札外（きっぷ不要）は station-card__caution--free、改札内は --ticket -->
     <div class="station-list">
       <figure class="station-card">
-        <img class="station-card__img" src="../../images/stations/駅広告横浜マップ.png" alt="JR横浜駅の掲出場所マップ" width="1414" height="1000" loading="lazy">
+        <a class="station-card__zoom" href="../../images/stations/駅広告横浜マップ.png" target="_blank" rel="noopener">
+          <img class="station-card__img" src="../../images/stations/駅広告横浜マップ.png" alt="JR横浜駅の掲出場所マップ（北改札内コンコース）" width="1280" height="720" loading="lazy">
+          <span class="station-card__zoom-hint">画像をタップすると拡大できます</span>
+        </a>
         <figcaption>
-          <p class="station-card__place">場所：JR横浜駅</p>
-          <p class="station-card__note">日程：2026/11/16～2026/11/22</p>
+          <p class="station-card__place">JR横浜駅</p>
+          <dl class="station-card__info">
+            <div>
+              <dt>場所</dt>
+              <dd>
+                北改札内コンコース（改札内）
+                <span class="station-card__detail">北改札を入った北改札内コンコースの西口側、9・10番線（横須賀線）ホームへのエスカレーター付近の壁面</span>
+              </dd>
+            </div>
+            <div>
+              <dt>日程</dt>
+              <dd>2026/11/16～2026/11/22</dd>
+            </div>
+          </dl>
+          <p class="station-card__caution station-card__caution--ticket">※改札内のため、入場券などが必要です</p>
         </figcaption>
       </figure>
 
       <figure class="station-card">
-        <img class="station-card__img" src="../../images/stations/駅広告東京マップ.png" alt="JR山手線 東京駅の掲出場所マップ" width="1414" height="1000" loading="lazy">
+        <a class="station-card__zoom" href="../../images/stations/駅広告東京マップ.png" target="_blank" rel="noopener">
+          <img class="station-card__img" src="../../images/stations/駅広告東京マップ.png" alt="JR山手線 東京駅の掲出場所マップ（丸の内地下1階）" width="1280" height="720" loading="lazy">
+          <span class="station-card__zoom-hint">画像をタップすると拡大できます</span>
+        </a>
         <figcaption>
-          <p class="station-card__place">場所：JR山手線 東京駅</p>
-          <p class="station-card__note">日程：2026/11/16～2026/11/22</p>
+          <p class="station-card__place">JR山手線 東京駅</p>
+          <dl class="station-card__info">
+            <div>
+              <dt>場所</dt>
+              <dd>
+                丸の内地下1階（改札外）
+                <span class="station-card__detail">丸の内地下中央口改札を出て右手、動輪の広場方面へ進んだ窓口側の壁面</span>
+              </dd>
+            </div>
+            <div>
+              <dt>日程</dt>
+              <dd>2026/11/16～2026/11/22</dd>
+            </div>
+          </dl>
+          <p class="station-card__caution station-card__caution--free">※改札外のため、きっぷなしでご覧いただけます</p>
         </figcaption>
       </figure>
 
       <figure class="station-card">
-        <img class="station-card__img" src="../../images/stations/駅広告愛知マップ.png" alt="JR東海 名古屋駅の掲出場所マップ" width="1414" height="1000" loading="lazy">
+        <a class="station-card__zoom" href="../../images/stations/駅広告愛知マップ.png" target="_blank" rel="noopener">
+          <img class="station-card__img" src="../../images/stations/駅広告愛知マップ.png" alt="JR東海 名古屋駅の掲出場所マップ（中央通路）" width="1280" height="720" loading="lazy">
+          <span class="station-card__zoom-hint">画像をタップすると拡大できます</span>
+        </a>
         <figcaption>
-          <p class="station-card__place">場所：JR東海 名古屋駅</p>
-          <p class="station-card__note">日程：2026/11/16～2026/11/22</p>
+          <p class="station-card__place">JR東海 名古屋駅</p>
+          <dl class="station-card__info">
+            <div>
+              <dt>場所</dt>
+              <dd>
+                中央通路（改札内）
+                <span class="station-card__detail">中央口改札を入った中央通路、3・4番線と1・2番線の階段の間の壁面（桜通口寄り）</span>
+              </dd>
+            </div>
+            <div>
+              <dt>日程</dt>
+              <dd>2026/11/16～2026/11/22</dd>
+            </div>
+          </dl>
+          <p class="station-card__caution station-card__caution--ticket">※改札内のため、入場券などが必要です</p>
         </figcaption>
       </figure>
     </div>
