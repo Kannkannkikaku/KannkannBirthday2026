@@ -319,8 +319,100 @@
     startAuto();
   }
 
+  /* ---------- 画像の拡大表示（インフォメーションのマップなど） ----------
+     ・<a href="画像" data-lightbox> を押すと、ページの上に画像を大きく表示する
+     ・表示中の画像をタップすると、その場所を中心に拡大。もう一度タップで元に戻る
+     ・×ボタン・背景のタップ・Escキーで閉じる */
+  function initLightbox() {
+    const links = document.querySelectorAll('a[data-lightbox]');
+    if (!links.length) return;
+
+    const dialog = document.createElement('dialog');
+    dialog.className = 'lightbox';
+    dialog.setAttribute('aria-label', '画像の拡大表示');
+
+    const closeBtn = document.createElement('button');
+    closeBtn.type = 'button';
+    closeBtn.className = 'lightbox__close';
+    closeBtn.setAttribute('aria-label', '閉じる');
+    closeBtn.textContent = '×';
+
+    const scroller = document.createElement('div');
+    scroller.className = 'lightbox__scroller';
+    const img = document.createElement('img');
+    img.className = 'lightbox__img';
+    img.alt = '';
+    scroller.appendChild(img);
+
+    const hint = document.createElement('p');
+    hint.className = 'lightbox__hint';
+
+    dialog.append(closeBtn, scroller, hint);
+    document.body.appendChild(dialog);
+
+    let zoomed = false;
+    const setZoom = (on, clientX, clientY) => {
+      zoomed = on;
+      hint.textContent = on ? 'もう一度タップすると元の大きさに戻ります' : '画像をタップすると拡大できます';
+      if (!on) {
+        dialog.classList.remove('is-zoomed');
+        img.style.width = '';
+        return;
+      }
+      // 拡大する前に、画面に合わせた大きさとタップした位置の割合を測っておく
+      const r = img.getBoundingClientRect();
+      const rx = (clientX - r.left) / r.width;
+      const ry = (clientY - r.top) / r.height;
+      // 画面に合わせた大きさの2.5倍か、画像の元の大きさの、大きいほうまで拡大
+      const width = Math.max(img.naturalWidth || 0, r.width * 2.5);
+      dialog.classList.add('is-zoomed');
+      img.style.width = `${Math.round(width)}px`;
+      // タップした位置が画面の中央に来るようにスクロール
+      const nr = img.getBoundingClientRect();
+      scroller.scrollLeft = rx * nr.width - scroller.clientWidth / 2;
+      scroller.scrollTop = ry * nr.height - scroller.clientHeight / 2;
+    };
+
+    const close = () => {
+      if (dialog.open) dialog.close();
+    };
+    dialog.addEventListener('close', () => {
+      document.documentElement.classList.remove('is-lightbox-open');
+      setZoom(false);
+    });
+    closeBtn.addEventListener('click', close);
+
+    // 画像をタップ：拡大／元に戻す。画像の外（暗い背景）をタップ：閉じる
+    // （拡大中に指でなぞって動かしたときは、タップとして扱わない）
+    let downX = 0;
+    let downY = 0;
+    scroller.addEventListener('pointerdown', (e) => {
+      downX = e.clientX;
+      downY = e.clientY;
+    });
+    scroller.addEventListener('click', (e) => {
+      if (Math.abs(e.clientX - downX) > 8 || Math.abs(e.clientY - downY) > 8) return;
+      if (e.target === img) setZoom(!zoomed, e.clientX, e.clientY);
+      else if (!zoomed) close();
+    });
+
+    links.forEach((link) => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const thumb = link.querySelector('img');
+        img.src = link.href;
+        img.alt = thumb ? thumb.alt : '';
+        setZoom(false);
+        document.documentElement.classList.add('is-lightbox-open'); // 後ろのページをスクロールさせない
+        if (typeof dialog.showModal === 'function') dialog.showModal();
+        else window.open(link.href, '_blank');
+      });
+    });
+  }
+
   /* ---------- 起動 ---------- */
   document.addEventListener('DOMContentLoaded', () => {
+    initLightbox();
     initCarousel();
     initMenu();
     initPetals();

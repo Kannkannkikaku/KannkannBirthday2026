@@ -1246,6 +1246,105 @@ body.is-paused .track {
   }
 }
 
+/* ---------- 画像の拡大表示（js/main.js の initLightbox） ---------- */
+html.is-lightbox-open {
+  overflow: hidden; /* 表示中は後ろのページをスクロールさせない */
+}
+
+.lightbox {
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: rgba(40, 30, 45, 0.9);
+  color: #fff;
+  overflow: hidden;
+}
+
+.lightbox::backdrop {
+  background: transparent;
+}
+
+.lightbox[open] {
+  animation: modal-in 0.2s ease;
+}
+
+.lightbox__scroller {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 12px 52px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.lightbox__img {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 6px;
+  background: #fff;
+  cursor: zoom-in;
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+/* 拡大中：画像を大きくして、スクロールで見たい場所へ動かせるようにする */
+.lightbox.is-zoomed .lightbox__scroller {
+  display: block;
+  padding: 0;
+}
+
+.lightbox.is-zoomed .lightbox__img {
+  max-width: none;
+  max-height: none;
+  border-radius: 0;
+  cursor: zoom-out;
+}
+
+.lightbox__close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 1;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--accent);
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.lightbox__close:focus-visible {
+  outline: 3px solid var(--accent-soft);
+  outline-offset: 2px;
+}
+
+.lightbox__hint {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  margin: 0;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.45);
+  font-size: 12px;
+  white-space: nowrap;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
 /* ※注意書き（改札外＝水色／改札内＝ピンク） */
 .station-card__caution {
   display: inline-block;
@@ -1322,7 +1421,8 @@ body.is-paused .track {
   .petal,
   .deco__sparkle,
   .countdown__hb,
-  .modal[open] {
+  .modal[open],
+  .lightbox[open] {
     animation: none;
   }
 
