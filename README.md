@@ -28,7 +28,7 @@ scripts/sample_responses.csv 変換の練習用サンプル
 
 | やりたいこと | 編集する場所 |
 | --- | --- |
-| お知らせを追加する | `js/main.js` の `NEWS` 配列（上に行くほど新しい） |
+| お知らせを追加する | `js/main.js` の `NEWS` 配列（上に行くほど新しい）。`date` の日（日本時間0時）になるまで表示されないので、先の予定も書いておける |
 | 誕生日の日付を変える | `js/main.js` の `BIRTHDAY` |
 | カウントダウン欄の切り替え | `js/main.js` の `HB_UNTIL_DAY`（Happy Birthday! を出す最後の日）と `THANKS_TEXT`（その翌日から出すお礼の文）。〜11/18 カウントダウン → 11/19〜22 Happy Birthday! → 11/23〜 お礼 |
 | 特定の日の表示を確認する | トップページのURLの末尾に `?preview-date=2026-11-19`（時刻まで指定するなら `?preview-date=2026-11-18T23:59:50`）を付けて開く |

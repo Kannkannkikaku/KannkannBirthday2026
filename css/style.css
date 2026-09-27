@@ -338,6 +338,19 @@ a {
   height: 18px;
 }
 
+/* 非公式である旨の注記 */
+.site-footer__note {
+  margin: 0 auto 8px;
+  font-size: 11px;
+  line-height: 1.6;
+  opacity: 0.8;
+}
+
+/* 文の区切りで折り返す（画面が狭いときだけ2行になる） */
+.site-footer__note span {
+  display: inline-block;
+}
+
 .site-footer small {
   display: block;
   font-size: 12px;
@@ -600,6 +613,23 @@ main {
   min-height: 0;
   display: flex;
   align-items: center;
+}
+
+/* 横方向の指の動きはスライド操作に使い、縦方向はページのスクロールに任せる */
+.lane {
+  touch-action: pan-y;
+}
+
+/* スライド中：このレーンの自動スクロールを止め、文字選択もしない */
+.lane.is-dragging {
+  z-index: 2;
+  cursor: grabbing;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.lane.is-dragging .track {
+  animation-play-state: paused;
 }
 
 /* マウスを乗せた・フォーカスしたカードのレーンを手前に */
@@ -1181,6 +1211,7 @@ body.is-paused .track {
   .lane {
     flex: none;
     overflow-x: auto;
+    touch-action: auto; /* この表示ではブラウザの普通の横スクロールを使う */
     padding: 8px 0 16px;
     scroll-snap-type: x proximity;
   }

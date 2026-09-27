@@ -19,7 +19,9 @@
   const THANKS_TEXT = 'たくさんのお祝い\nありがとうございました！'; // \n の位置で改行
 
   // お知らせ（新しいものを上に書く）。text はそのまま文字として表示される
+  // date の日（日本時間 0:00）になるまでは表示されないので、先の予定も書いておける
   const NEWS = [
+    { date: '2026.11.16', text: '本日から掲出開始！' },
     { date: '2026.09.24', text: '企画サイトを公開しました！' },
     { date: '2026.09.24', text: 'お祝いメッセージを募集中です。' },
   ];
@@ -91,7 +93,12 @@
     const list = document.getElementById('news-list');
     if (!list) return;
 
+    const now = nowInJst().getTime();
     NEWS.forEach((item) => {
+      // 日付（日本時間 0:00）になるまでは出さない
+      const [y, m, d] = item.date.split('.').map(Number);
+      if (now < Date.UTC(y, m - 1, d)) return;
+
       const li = document.createElement('li');
       const time = document.createElement('time');
       time.dateTime = item.date.replace(/\./g, '-');

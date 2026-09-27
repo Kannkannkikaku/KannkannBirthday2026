@@ -183,6 +183,90 @@ const MessageFlow = (() => {
       this.track.addEventListener('animationiteration', (e) => {
         if (e.target === this.track) this.rotate();
       });
+
+      this.enableDrag();
+    }
+
+    /* 指（マウス）で左右になぞって送る
+       ・なぞっている間はこのレーンの自動スクロールを止め、ずらした分だけ
+         アニメーションの再生位置（currentTime）を前後させる
+       ・再生位置が 0 より前／1周分より後ろにはみ出したら、セットの並びを
+         入れ替えて1周の中に戻す（見た目は変わらず、ループも途切れない）
+       ・離すとそこから自動スクロールを再開する */
+    enableDrag() {
+      const lane = this.el;
+      const track = this.track;
+      const durMs = this.opts.duration * 1000;
+      let pointerId = null;
+      let startX = 0;
+      let startY = 0;
+      let lastX = 0;
+      let dragging = false;
+      let justDragged = false;
+      let anim = null;
+      let base = 0; // 何周目かの頭の時刻（ここは変えない＝ループの区切りイベントを起こさない）
+      let t = 0; // 1周の中での再生位置（0〜durMs）
+
+      lane.addEventListener('pointerdown', (e) => {
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
+        anim = track.getAnimations ? track.getAnimations()[0] : null;
+        if (!anim) return;
+        pointerId = e.pointerId;
+        startX = lastX = e.clientX;
+        startY = e.clientY;
+        dragging = false;
+        justDragged = false;
+      });
+
+      lane.addEventListener('pointermove', (e) => {
+        if (e.pointerId !== pointerId) return;
+        if (!dragging) {
+          const dx = e.clientX - startX;
+          const dy = e.clientY - startY;
+          // 横に8px以上、かつ縦より横に大きく動いたらスライド開始（それ以外はタップ・縦スクロール扱い）
+          if (Math.abs(dx) < 8 || Math.abs(dx) < Math.abs(dy)) return;
+          dragging = true;
+          lane.classList.add('is-dragging');
+          try { lane.setPointerCapture(pointerId); } catch (err) { /* 取得できなくても続行 */ }
+          const cur = Number(anim.currentTime) || 0;
+          base = Math.floor(cur / durMs) * durMs;
+          t = cur - base;
+          lastX = e.clientX;
+        }
+        // 1セットの幅 W を durMs かけて進むので、1px は durMs / W ミリ秒
+        const setWidth = track.firstElementChild.offsetWidth || 1;
+        t -= ((e.clientX - lastX) * durMs) / setWidth;
+        lastX = e.clientX;
+        while (t < 0) { this.rotateBack(); t += durMs; }
+        while (t >= durMs) { this.rotate(); t -= durMs; }
+        anim.currentTime = base + t;
+      });
+
+      const end = (e) => {
+        if (e.pointerId !== pointerId) return;
+        pointerId = null;
+        if (dragging) {
+          dragging = false;
+          justDragged = true; // 直後のクリック（モーダル表示）を無視する
+          lane.classList.remove('is-dragging');
+        }
+      };
+      lane.addEventListener('pointerup', end);
+      lane.addEventListener('pointercancel', end);
+
+      // スライドした直後のクリックではカードを開かない
+      lane.addEventListener('click', (e) => {
+        if (justDragged) {
+          e.stopPropagation();
+          e.preventDefault();
+          justDragged = false;
+        }
+      }, true);
+    }
+
+    // 逆向きにループの区切りをまたいだとき：末尾のセットを先頭へ戻す
+    rotateBack() {
+      this.track.prepend(this.track.lastElementChild);
     }
 
     // 次に並べる perLane 件を取り出す（足りなければ先頭に戻って繰り返す）
