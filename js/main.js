@@ -18,12 +18,23 @@
   const HB_UNTIL_DAY = 22; // Happy Birthday! を表示する最後の日（誕生日と同じ月）
   const THANKS_TEXT = 'たくさんのお祝い\nありがとうございました！'; // \n の位置で改行
 
+  // X でつけてほしいハッシュタグ（# は付けずに書く）とサイトのURL
+  const HASHTAGS = ['菅叶和生誕祭2026', '菅叶和誕生祭2026'];
+  const SITE_URL = 'https://kannkannkikaku.github.io/KannkannBirthday2026/';
+
   // お知らせ（新しいものを上に書く）。text はそのまま文字として表示される
   // date の日（日本時間 0:00）になるまでは表示されないので、先の予定も書いておける
+  // hashtags: true にすると、ハッシュタグと「Xでお祝いを投稿する」ボタンを下に付ける
   const NEWS = [
-    { date: '2026.11.16', text: '本日から掲出開始！' },
-    { date: '2026.09.24', text: '企画サイトを公開しました！' },
-    { date: '2026.09.24', text: 'お祝いメッセージを募集中です。' },
+    { date: '2026.11.23', text: '駅広告の掲出は終了しました。たくさんのご来場ありがとうございました！' },
+    { date: '2026.11.19', text: '菅叶和さん、お誕生日おめでとうございます！🎂' },
+    { date: '2026.11.16', text: '本日から駅広告の掲出がスタート！（横浜・東京・名古屋／〜11/22）' },
+    {
+      date: '2026.11.16',
+      text: `${HASHTAGS.map((t) => `#${t}`).join(' ')} をつけて、駅広告の写真やお祝いの気持ちをぜひ投稿してください！`,
+      hashtags: true,
+    },
+    { date: '2026.11.16', text: '企画サイトを公開しました！' },
   ];
 
   // 花びらの数（スマホは少なめ）
@@ -106,8 +117,42 @@
       const text = document.createElement('span');
       text.textContent = item.text;
       li.append(time, text);
+      if (item.hashtags) li.appendChild(createHashtagLinks());
       list.appendChild(li);
     });
+
+    // 表示できるお知らせがまだないとき
+    if (!list.children.length) {
+      const li = document.createElement('li');
+      li.className = 'news__empty';
+      li.textContent = 'お知らせはまだありません。';
+      list.appendChild(li);
+    }
+  }
+
+  // ハッシュタグ（X の検索結果へ）と、ハッシュタグ入りの投稿画面を開くボタン
+  function createHashtagLinks() {
+    const box = document.createElement('div');
+    box.className = 'news__links';
+    const addLink = (label, href, className) => {
+      const a = document.createElement('a');
+      a.className = className;
+      a.href = href;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      a.textContent = label;
+      box.appendChild(a);
+    };
+    HASHTAGS.forEach((tag) => {
+      addLink(`#${tag}`, `https://x.com/hashtag/${encodeURIComponent(tag)}`, 'news__tag');
+    });
+    const params = new URLSearchParams({
+      text: '菅叶和さん、お誕生日おめでとうございます！',
+      hashtags: HASHTAGS.join(','),
+      url: SITE_URL,
+    });
+    addLink('Xでお祝いを投稿する', `https://x.com/intent/post?${params}`, 'news__post');
+    return box;
   }
 
   /* ---------- カウントダウン ---------- */
