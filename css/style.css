@@ -1184,6 +1184,20 @@ body.is-paused .track {
   }
 }
 
+/* 絵師さんのXプロフィールへのリンク（イラストページ） */
+.station-card__artist {
+  color: var(--accent);
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  overflow-wrap: anywhere;
+}
+
+.station-card__artist:hover {
+  text-decoration-thickness: 2px;
+}
+
 /* 場所・日程（インフォメーション） */
 .station-card__info {
   max-width: 560px;
