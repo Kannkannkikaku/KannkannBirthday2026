@@ -22,8 +22,11 @@
   const HASHTAGS = ['菅叶和生誕祭2026', '菅叶和誕生祭2026'];
   const SITE_URL = 'https://kannkannkikaku.github.io/KannkannBirthday2026/';
 
+  // サイトの公開日。この日以前の日付のお知らせは、日付に関係なく常に表示する
+  const SITE_OPEN_DATE = '2026.11.16';
+
   // お知らせ（新しいものを上に書く）。text はそのまま文字として表示される
-  // date の日（日本時間 0:00）になるまでは表示されないので、先の予定も書いておける
+  // 公開日より後の日付のものは、date の日（日本時間 0:00）になるまで表示されないので、先の予定も書いておける
   // hashtags: true にすると、ハッシュタグと「Xでお祝いを投稿する」ボタンを下に付ける
   const NEWS = [
     { date: '2026.11.23', text: '駅広告の掲出は終了しました。たくさんのご来場ありがとうございました！' },
@@ -105,10 +108,15 @@
     if (!list) return;
 
     const now = nowInJst().getTime();
+    const toTime = (date) => {
+      const [y, m, d] = date.split('.').map(Number);
+      return Date.UTC(y, m - 1, d); // その日の 0:00（日本時間）
+    };
+    const openTime = toTime(SITE_OPEN_DATE);
     NEWS.forEach((item) => {
-      // 日付（日本時間 0:00）になるまでは出さない
-      const [y, m, d] = item.date.split('.').map(Number);
-      if (now < Date.UTC(y, m - 1, d)) return;
+      // 公開日より後のお知らせは、その日（日本時間 0:00）になるまでは出さない
+      const itemTime = toTime(item.date);
+      if (itemTime > openTime && now < itemTime) return;
 
       const li = document.createElement('li');
       const time = document.createElement('time');
