@@ -1097,7 +1097,7 @@ body.is-paused .track {
   opacity: 0.7;
 }
 
-/* ハッシュタグと「Xでお祝いを投稿する」ボタン */
+/* ハッシュタグのボタン */
 .news__links {
   flex-basis: 100%;
   display: flex;
@@ -1122,35 +1122,7 @@ body.is-paused .track {
   background: #e3f5fb;
 }
 
-.news__post {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 16px;
-  border-radius: 999px;
-  background: #111;
-  color: #fff;
-  font-size: 13px;
-  font-weight: 700;
-  text-decoration: none;
-}
-
-/* 先頭に X のロゴ */
-.news__post::before {
-  content: "";
-  width: 14px;
-  height: 14px;
-  background: currentColor;
-  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z'/%3E%3C/svg%3E") center / contain no-repeat;
-  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z'/%3E%3C/svg%3E") center / contain no-repeat;
-}
-
-.news__post:hover {
-  background: #333;
-}
-
-.news__tag:focus-visible,
-.news__post:focus-visible {
+.news__tag:focus-visible {
   outline: 3px solid var(--accent-soft);
   outline-offset: 2px;
 }
