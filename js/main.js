@@ -137,23 +137,65 @@
     }
   }
 
-  // ハッシュタグのボタン（X のハッシュタグの投稿一覧へ）
+  // ハッシュタグの表示と「ハッシュタグをコピー」ボタン
+  // （スマホでは X へのリンクがアプリではなくブラウザで開くため、コピーして X アプリに貼ってもらう）
   function createHashtagLinks() {
     const box = document.createElement('div');
     box.className = 'news__links';
-    const addLink = (label, href, className) => {
-      const a = document.createElement('a');
-      a.className = className;
-      a.href = href;
-      a.target = '_blank';
-      a.rel = 'noopener noreferrer';
-      a.textContent = label;
-      box.appendChild(a);
-    };
     HASHTAGS.forEach((tag) => {
-      addLink(`#${tag}`, `https://x.com/hashtag/${encodeURIComponent(tag)}`, 'news__tag');
+      const span = document.createElement('span');
+      span.className = 'news__tag';
+      span.textContent = `#${tag}`;
+      box.appendChild(span);
     });
+
+    const copyText = HASHTAGS.map((t) => `#${t}`).join(' ');
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'news__copy';
+    const label = 'ハッシュタグをコピー';
+    btn.textContent = label;
+    // コピー結果を読み上げソフトにも伝える
+    const status = document.createElement('span');
+    status.className = 'visually-hidden';
+    status.setAttribute('aria-live', 'polite');
+
+    let resetTimer = null;
+    btn.addEventListener('click', async () => {
+      const ok = await copyToClipboard(copyText);
+      btn.textContent = ok ? 'コピーしました！' : 'コピーできませんでした';
+      btn.classList.toggle('is-done', ok);
+      status.textContent = ok ? `${copyText} をコピーしました` : 'コピーできませんでした';
+      clearTimeout(resetTimer);
+      resetTimer = setTimeout(() => {
+        btn.textContent = label;
+        btn.classList.remove('is-done');
+      }, 2000);
+    });
+    box.append(btn, status);
     return box;
+  }
+
+  // 文字をクリップボードにコピー（使えないブラウザでは昔ながらの方法で）
+  async function copyToClipboard(text) {
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        return true;
+      }
+    } catch (err) { /* 下の方法で再挑戦 */ }
+    const area = document.createElement('textarea');
+    area.value = text;
+    area.setAttribute('readonly', '');
+    area.style.position = 'fixed';
+    area.style.opacity = '0';
+    document.body.appendChild(area);
+    area.select();
+    area.setSelectionRange(0, text.length); // iOS 向け
+    let ok = false;
+    try { ok = document.execCommand('copy'); } catch (err) { ok = false; }
+    area.remove();
+    return ok;
   }
 
   /* ---------- カウントダウン ---------- */

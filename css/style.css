@@ -1097,7 +1097,7 @@ body.is-paused .track {
   opacity: 0.7;
 }
 
-/* ハッシュタグのボタン */
+/* ハッシュタグの表示と「ハッシュタグをコピー」ボタン */
 .news__links {
   flex-basis: 100%;
   display: flex;
@@ -1118,11 +1118,46 @@ body.is-paused .track {
   text-decoration: none;
 }
 
-.news__tag:hover {
-  background: #e3f5fb;
+.news__copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 4px 16px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
 }
 
-.news__tag:focus-visible {
+/* 先頭にコピーのアイコン（重なった四角） */
+.news__copy::before {
+  content: "";
+  width: 12px;
+  height: 12px;
+  border: 2px solid currentColor;
+  border-radius: 3px;
+  box-shadow: 3px -3px 0 -1px var(--accent), 3px -3px 0 1px currentColor;
+}
+
+.news__copy:hover {
+  background: #e83e88;
+}
+
+.news__copy.is-done {
+  background: var(--blue-text);
+}
+
+.news__copy.is-done::before {
+  display: none;
+}
+
+.news__copy:focus-visible {
   outline: 3px solid var(--accent-soft);
   outline-offset: 2px;
 }
