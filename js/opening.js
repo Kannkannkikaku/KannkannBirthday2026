@@ -18,6 +18,9 @@
   // [画面の横位置(%), 色]
   const SPOTS = [[12, '#7cc8ff'], [88, '#ff8fb3'], [27, '#ffd84a'], [73, '#ff4d5e'], [41, '#ffffff'], [59, '#3f6dff']];
 
+  // 一番端のライトを内側へ傾ける角度（度）。内側のライトほど傾きは小さくなる
+  const EDGE_TILT_DEG = 20;
+
   let removeTimer = null;
   let onKey = null;
 
@@ -45,19 +48,17 @@
       <button class="op-skip" type="button">スキップ</button>`;
 
     const beams = op.querySelector('.op-beams');
-    // 光を向ける先：画面の横中央の、ずっと下（画面の高さの2.5倍の深さ）。
-    // 一点に集めず「＼＼｜／／」のように、外側ほど少しだけ内側へ傾き、光の先は下で横に広がる。
-    // 数字を小さくすると傾きが強くなり、大きくするとまっすぐ下に近づく
-    const w = window.innerWidth;
-    const h = window.innerHeight;
-    const targetX = w * 0.5;
-    const targetY = h * 2.5;
+    // 「＼＼｜／／」のように、外側ほど内側へ傾け、光の先は下で横に広がるようにする。
+    // 6本とも画面の横中央のずっと下の一点へ向け、その深さは「一番端のライトがちょうど
+    // EDGE_TILT_DEG 度になる」ように決める（画面の大きさに関係なく同じ角度になる）
+    const edgeOffset = Math.max(...SPOTS.map(([x]) => Math.abs(50 - x))); // 中央から一番端のライトまで（%）
+    const edgeTan = Math.tan((EDGE_TILT_DEG * Math.PI) / 180);
     SPOTS.forEach(([x, col], i) => {
       const d = `${1.6 + i * 0.3}s`; // 点灯するまでの時間（0.3秒ずつずらす）
-      // 真下向きの光線を、画面上端の照明の位置から集める一点へ向ける角度。
+      // 中央からの距離に比例して傾ける（端＝EDGE_TILT_DEG、中央に近いほど小さい）。
       // CSS の rotate はプラスで時計回り（先端が左へ）なので、右へ向けるときはマイナス
-      const dx = targetX - (w * x) / 100;
-      const a = `${(-Math.atan2(dx, targetY) * 180) / Math.PI}deg`;
+      const tilt = (Math.atan(((50 - x) / edgeOffset) * edgeTan) * 180) / Math.PI;
+      const a = `${-tilt}deg`;
       beams.insertAdjacentHTML('beforeend',
         `<i class="op-beam" style="--x:${x}%;--col:${col};--a:${a};--d:${d}"></i>` +
         `<i class="op-lamp" style="--x:${x}%;--col:${col};--d:${d}"></i>`);
