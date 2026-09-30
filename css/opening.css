@@ -204,9 +204,54 @@
   animation: opFade 0.3s ease 3.9s forwards;
 }
 
-/* 動きを減らす設定の人には表示しない（JS 側でも作らない） */
+/* ---------- 「オープニングをもう一度見る」ボタン（トップページの一番下の右端） ---------- */
+.op-replay-wrap {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 16px 16px;
+}
+
+.op-replay {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: 1.5px solid var(--accent-soft);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--accent);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(255, 79, 154, 0.12);
+  transition: background 0.2s, color 0.2s;
+}
+
+/* 先頭に再生マーク（▶） */
+.op-replay::before {
+  content: "";
+  width: 0;
+  height: 0;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-left: 8px solid currentColor;
+}
+
+.op-replay:hover {
+  background: var(--accent);
+  color: #fff;
+}
+
+.op-replay:focus-visible {
+  outline: 3px solid var(--accent-soft);
+  outline-offset: 2px;
+}
+
+/* 動きを減らす設定の人には表示しない（JS 側でも作らない）。もう一度見るボタンも出さない */
 @media (prefers-reduced-motion: reduce) {
-  .op {
+  .op,
+  .op-replay-wrap {
     display: none;
   }
 }
