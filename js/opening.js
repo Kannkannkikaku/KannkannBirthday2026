@@ -45,9 +45,17 @@
       <button class="op-skip" type="button">スキップ</button>`;
 
     const beams = op.querySelector('.op-beams');
+    // 光を集める一点：閃光が広がり始める位置（css/opening.css の .op-flash と同じ、横中央・上から62%）
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    const targetX = w * 0.5;
+    const targetY = h * 0.62;
     SPOTS.forEach(([x, col], i) => {
       const d = `${1.6 + i * 0.3}s`; // 点灯するまでの時間（0.3秒ずつずらす）
-      const a = `${(x - 50) * 0.55}deg`; // 画面中央へ向ける角度
+      // 真下向きの光線を、画面上端の照明の位置から集める一点へ向ける角度。
+      // CSS の rotate はプラスで時計回り（先端が左へ）なので、右へ向けるときはマイナス
+      const dx = targetX - (w * x) / 100;
+      const a = `${(-Math.atan2(dx, targetY) * 180) / Math.PI}deg`;
       beams.insertAdjacentHTML('beforeend',
         `<i class="op-beam" style="--x:${x}%;--col:${col};--a:${a};--d:${d}"></i>` +
         `<i class="op-lamp" style="--x:${x}%;--col:${col};--d:${d}"></i>`);

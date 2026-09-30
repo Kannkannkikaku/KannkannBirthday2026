@@ -4,7 +4,7 @@
    ---------------------------------------------------------
    流れ（秒は読み込み直後からの時間）
      0.2〜1.8s  暗転の中に「まもなく開演です」
-     1.6〜3.1s  6色のスポットライトが外側から左右交互に点灯し、ゆっくり首を振る
+     1.6〜3.1s  6色のスポットライトが外側から左右交互に点灯し、画面の中心を照らす
      3.6s〜     閃光が広がって画面が白くなる（3.9s〜 背景も白へ）
      4.2s〜     タイトル表示
      5.9〜6.9s  全体がフェードアウトして、パステルのトップページが見える
@@ -95,7 +95,8 @@
 }
 
 /* 光線：ぼかしフィルターや切り抜きを使わず、円錐グラデーションで描く（四角い枠が出ない）
-   --a で客席の中央へ向けて傾け、下にいくほど mask で薄くする */
+   --a で画面の中心（閃光が広がる位置）へ向けて傾け、首は振らずに止めておく。
+   角度は画面の縦横に合わせて js/opening.js が計算する。下にいくほど mask で薄くする */
 .op-beam {
   position: absolute;
   top: 0;
@@ -116,7 +117,7 @@
   mask-image: linear-gradient(180deg, #000 0%, rgba(0, 0, 0, 0.6) 45%, transparent 90%);
   opacity: 0;
   pointer-events: none;
-  animation: opBeam 0.4s linear var(--d) forwards, opSweep 1.3s ease-in-out calc(var(--d) + 0.4s) infinite alternate;
+  animation: opBeam 0.4s linear var(--d) forwards;
 }
 
 @keyframes opBeam {
@@ -125,12 +126,6 @@
   45% { opacity: 0.15; }
   60% { opacity: 1; }
   100% { opacity: 0.75; }
-}
-
-/* 点灯後はゆっくり首を振る */
-@keyframes opSweep {
-  from { transform: rotate(-5deg); }
-  to { transform: rotate(5deg); }
 }
 
 /* 閃光：画面全体を覆う放射グラデーションを拡大（小さな影を拡大しないので角が出ない） */
