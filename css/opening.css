@@ -106,12 +106,13 @@
   margin-left: -60vmax;
   transform-origin: 50% 0;
   rotate: var(--a);
-  background: conic-gradient(from 168deg at 50% 0,
+  /* 光の広がりは約40°（160°〜200°、真下の180°が中心）。中心の白く明るい線は約6° */
+  background: conic-gradient(from 160deg at 50% 0,
     transparent 0deg,
-    var(--col) 9deg,
-    rgba(255, 255, 255, 0.9) 12deg,
-    var(--col) 15deg,
-    transparent 24deg,
+    var(--col) 14deg,
+    rgba(255, 255, 255, 0.9) 20deg,
+    var(--col) 26deg,
+    transparent 40deg,
     transparent 360deg);
   -webkit-mask-image: linear-gradient(180deg, #000 0%, rgba(0, 0, 0, 0.6) 45%, transparent 90%);
   mask-image: linear-gradient(180deg, #000 0%, rgba(0, 0, 0, 0.6) 45%, transparent 90%);
