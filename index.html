@@ -24,11 +24,14 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;700;800&display=swap">
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/opening.css">
   <script src="js/main.js" defer></script>
   <script src="js/csv.js" defer></script>
   <script src="js/messages.js" defer></script>
 </head>
 <body>
+  <!-- オープニング演出（トップページだけ）。描画前に幕を出すため body の先頭で読み込む -->
+  <script src="js/opening.js"></script>
   <!-- 背景装飾（星・花びら） -->
   <div class="deco" aria-hidden="true">
     <div class="deco__stars"></div>

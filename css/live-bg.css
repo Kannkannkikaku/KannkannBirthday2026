@@ -1,0 +1,115 @@
+@charset "UTF-8";
+/* =========================================================
+   メッセージページの背景「ペンライトの海」
+   （pages/message/index.html だけで読み込む）
+   ---------------------------------------------------------
+   ・ステージから客席を見下ろしたイメージ。上にステージの光、下にペンライト
+   ・ペンライトの要素は js/live-bg.js が約260本作る
+   ・カードの流れ方・色・モーダルは css/style.css のまま（ここでは背景と読みやすさだけ調整）
+   ========================================================= */
+
+/* ペンライトの6色 */
+.live-bg {
+  --pen-red: #ff4d5e;
+  --pen-white: #ffffff;
+  --pen-yellow: #ffd84a;
+  --pen-blue: #3f6dff;
+  --pen-sky: #7cc8ff;
+  --pen-pink: #ff8fb3;
+}
+
+/* パステルのグラデーションを、このページだけ夜の会場の色に置き換える */
+body.message-page {
+  background: #070a1c;
+}
+
+/* 背景レイヤー（コンテンツの後ろに固定） */
+.live-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  background: linear-gradient(180deg, #1e2a66 0%, #0e1238 40%, #070a1c 100%);
+}
+
+.live-bg i {
+  position: absolute;
+}
+
+/* ステージの光（画面上部のぼんやりした明るさ） */
+.stage-glow {
+  top: -18%;
+  left: 50%;
+  width: 120vw;
+  height: 70vh;
+  margin-left: -60vw;
+  border-radius: 50%;
+  background: radial-gradient(closest-side,
+    rgba(255, 255, 255, 0.9),
+    rgba(124, 200, 255, 0.45) 35%,
+    rgba(255, 179, 209, 0.25) 60%,
+    transparent);
+}
+
+/* ペンライト1本。--w 太さ / --h 長さ / --pc 色 / --t 揺れの速さ / --delay 揺れの始まり
+   根元（下端）を中心に左右へ振る */
+.pen {
+  width: var(--w);
+  height: var(--h);
+  border-radius: calc(var(--w) / 2);
+  background: var(--pc);
+  opacity: 0.9;
+  box-shadow:
+    0 0 calc(var(--w) * 1.4) calc(var(--w) * 0.4) var(--pc),
+    0 0 calc(var(--w) * 3) calc(var(--w) * 0.6) var(--pc);
+  transform-origin: 50% 100%;
+  animation: wave var(--t) ease-in-out infinite alternate;
+  animation-delay: var(--delay);
+}
+
+@keyframes wave {
+  from { transform: rotate(-16deg); }
+  to { transform: rotate(16deg); }
+}
+
+/* ---------- 暗い背景でも読めるように（背景色と影だけ調整） ---------- */
+
+/* ヘッダー：半透明の白だと灰色に沈むので、白を濃くする */
+.message-page .site-header {
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.35);
+}
+
+/* 見出し：暗い背景から浮かせる影 */
+.message-page .pill-title {
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
+}
+
+/* カード：後ろのペンライトが透けて灰色っぽく沈むので、白を少し濃くする（色・枠・影はそのまま） */
+.message-page .card {
+  background: rgba(255, 255, 255, 0.96);
+}
+
+/* 「読み込み中」「準備中」の案内文字 */
+.message-page .flow__status {
+  color: #fff;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
+}
+
+/* 「一覧で読む」ボタン */
+.message-page .btn {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+
+/* フッター：半透明の白だと文字が沈むので、白を濃くする */
+.message-page .site-footer {
+  background: rgba(255, 255, 255, 0.92);
+}
+
+/* 動きを減らす設定の人：ペンライトは揺らさない */
+@media (prefers-reduced-motion: reduce) {
+  .pen {
+    animation: none;
+  }
+}

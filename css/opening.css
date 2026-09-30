@@ -1,0 +1,212 @@
+@charset "UTF-8";
+/* =========================================================
+   トップページのオープニング演出（index.html だけで読み込む）
+   ---------------------------------------------------------
+   流れ（秒は読み込み直後からの時間）
+     0.2〜1.8s  暗転の中に「まもなく開演です」
+     1.6〜3.1s  6色のスポットライトが外側から左右交互に点灯し、ゆっくり首を振る
+     3.6s〜     閃光が広がって画面が白くなる（3.9s〜 背景も白へ）
+     4.2s〜     タイトル表示
+     5.9〜6.9s  全体がフェードアウトして、パステルのトップページが見える
+   ・光線は conic-gradient（円錐グラデーション）＋ mask-image で描く。
+     filter: blur や clip-path は使わない（PCで四角い枠が出るため）
+   ・要素は js/opening.js が作る
+   ========================================================= */
+
+/* 全画面の幕。ヘッダー(50)・メニュー(60〜70)・下部ナビ(40)より前面に出す */
+.op {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: #000;
+  overflow: hidden;
+  cursor: pointer;
+  font-family: "M PLUS Rounded 1c", "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif;
+  animation: opWhite 0.5s ease 3.9s forwards, opOut 1s ease 5.9s forwards;
+}
+
+/* 閃光で白へ → パステルのトップへ溶け込む */
+@keyframes opWhite {
+  to { background: #fff; }
+}
+
+@keyframes opOut {
+  to { opacity: 0; visibility: hidden; }
+}
+
+/* タップ・スキップしたとき：すぐに消す */
+.op.skip {
+  animation: opOut 0.4s ease forwards;
+}
+
+/* 「まもなく開演です」 */
+.op-call {
+  position: absolute;
+  top: 48%;
+  left: 0;
+  right: 0;
+  text-align: center;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.35em;
+  opacity: 0;
+  animation: opCall 1.6s ease 0.2s forwards;
+}
+
+@keyframes opCall {
+  0% { opacity: 0; }
+  30%, 70% { opacity: 0.85; }
+  100% { opacity: 0; }
+}
+
+/* スポットライト全体（閃光の直前に消す） */
+.op-beams {
+  position: absolute;
+  inset: 0;
+  animation: opFade 0.6s ease 4s forwards;
+}
+
+@keyframes opFade {
+  to { opacity: 0; }
+}
+
+/* 画面上端の照明（丸いランプ）。--x 位置 / --col 色 / --d 点灯までの時間 */
+.op-lamp {
+  position: absolute;
+  top: -6px;
+  left: var(--x);
+  width: 22px;
+  height: 22px;
+  margin-left: -11px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 20px 8px var(--col);
+  opacity: 0;
+  animation: opLamp 0.4s linear var(--d) forwards;
+}
+
+/* チカッと瞬いてから点灯 */
+@keyframes opLamp {
+  0% { opacity: 0; }
+  30% { opacity: 1; }
+  45% { opacity: 0.2; }
+  60%, 100% { opacity: 1; }
+}
+
+/* 光線：ぼかしフィルターや切り抜きを使わず、円錐グラデーションで描く（四角い枠が出ない）
+   --a で客席の中央へ向けて傾け、下にいくほど mask で薄くする */
+.op-beam {
+  position: absolute;
+  top: 0;
+  left: var(--x);
+  width: 120vmax;
+  height: 130vh;
+  margin-left: -60vmax;
+  transform-origin: 50% 0;
+  rotate: var(--a);
+  background: conic-gradient(from 168deg at 50% 0,
+    transparent 0deg,
+    var(--col) 9deg,
+    rgba(255, 255, 255, 0.9) 12deg,
+    var(--col) 15deg,
+    transparent 24deg,
+    transparent 360deg);
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, rgba(0, 0, 0, 0.6) 45%, transparent 90%);
+  mask-image: linear-gradient(180deg, #000 0%, rgba(0, 0, 0, 0.6) 45%, transparent 90%);
+  opacity: 0;
+  pointer-events: none;
+  animation: opBeam 0.4s linear var(--d) forwards, opSweep 1.3s ease-in-out calc(var(--d) + 0.4s) infinite alternate;
+}
+
+@keyframes opBeam {
+  0% { opacity: 0; }
+  30% { opacity: 0.9; }
+  45% { opacity: 0.15; }
+  60% { opacity: 1; }
+  100% { opacity: 0.75; }
+}
+
+/* 点灯後はゆっくり首を振る */
+@keyframes opSweep {
+  from { transform: rotate(-5deg); }
+  to { transform: rotate(5deg); }
+}
+
+/* 閃光：画面全体を覆う放射グラデーションを拡大（小さな影を拡大しないので角が出ない） */
+.op-flash {
+  position: absolute;
+  left: 50%;
+  top: 62%;
+  width: 260vmax;
+  height: 260vmax;
+  margin: -130vmax 0 0 -130vmax;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, #fff 0%, #fff 55%, rgba(255, 255, 255, 0) 100%);
+  opacity: 0;
+  transform: scale(0);
+  pointer-events: none;
+  animation: opFlash 1s ease-out 3.6s forwards;
+}
+
+@keyframes opFlash {
+  0% { opacity: 0; transform: scale(0); }
+  20% { opacity: 1; }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* タイトル：サイトのヒーローと同じピンク＋白縁 */
+.op-title {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #ff4f9a;
+  opacity: 0;
+  animation: opTitle 1s ease 4.2s forwards;
+  text-shadow: 0 2px 0 #fff, 0 0 12px rgba(255, 255, 255, 0.9);
+}
+
+.op-title span {
+  margin-bottom: 10px;
+  color: #ffb3d1;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.35em;
+}
+
+.op-title strong {
+  font-size: clamp(24px, 6.5vw, 44px);
+  font-weight: 800;
+  line-height: 1.4;
+}
+
+@keyframes opTitle {
+  from { opacity: 0; transform: scale(0.94); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* スキップボタン（白くなる直前に消える） */
+.op-skip {
+  position: absolute;
+  right: 16px;
+  bottom: 20px;
+  padding: 6px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 999px;
+  background: transparent;
+  color: #fff;
+  font: 500 12px "M PLUS Rounded 1c", sans-serif;
+  cursor: pointer;
+  animation: opFade 0.3s ease 3.9s forwards;
+}
+
+/* 動きを減らす設定の人には表示しない（JS 側でも作らない） */
+@media (prefers-reduced-motion: reduce) {
+  .op {
+    display: none;
+  }
+}

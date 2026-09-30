@@ -24,19 +24,16 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;700;800&display=swap">
   <link rel="stylesheet" href="../../css/style.css">
+  <link rel="stylesheet" href="../../css/live-bg.css">
   <script src="../../js/main.js" defer></script>
   <script src="../../js/csv.js" defer></script>
   <script src="../../js/messages.js" defer></script>
+  <script src="../../js/live-bg.js" defer></script>
 </head>
 <body class="message-page">
-  <!-- 背景装飾（星・花びら） -->
-  <div class="deco" aria-hidden="true">
-    <div class="deco__stars"></div>
-    <span class="deco__sparkle"></span>
-    <span class="deco__sparkle"></span>
-    <span class="deco__sparkle"></span>
-    <span class="deco__sparkle"></span>
-  </div>
+  <!-- 背景「ペンライトの海」（ペンライトは js/live-bg.js が作る）。
+       このページでは星・キラキラ・花びらの背景装飾（.deco）は使わない -->
+  <div class="live-bg" id="live-bg" aria-hidden="true"><i class="stage-glow"></i></div>
 
   <!-- ヘッダー -->
   <header class="site-header">
