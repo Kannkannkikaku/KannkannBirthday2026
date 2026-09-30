@@ -45,11 +45,13 @@
       <button class="op-skip" type="button">スキップ</button>`;
 
     const beams = op.querySelector('.op-beams');
-    // 光を集める一点：閃光が広がり始める位置（css/opening.css の .op-flash と同じ、横中央・上から62%）
+    // 光を向ける先：画面の横中央の、ずっと下（画面の高さの2.5倍の深さ）。
+    // 一点に集めず「＼＼｜／／」のように、外側ほど少しだけ内側へ傾き、光の先は下で横に広がる。
+    // 数字を小さくすると傾きが強くなり、大きくするとまっすぐ下に近づく
     const w = window.innerWidth;
     const h = window.innerHeight;
     const targetX = w * 0.5;
-    const targetY = h * 0.62;
+    const targetY = h * 2.5;
     SPOTS.forEach(([x, col], i) => {
       const d = `${1.6 + i * 0.3}s`; // 点灯するまでの時間（0.3秒ずつずらす）
       // 真下向きの光線を、画面上端の照明の位置から集める一点へ向ける角度。
