@@ -17,13 +17,26 @@
   --accent-soft: #ffb3d1;
   --text: #5a4a5e;
 
-  /* カード3色（枠 / 文字） */
+  /* ピンク・水色（ハッシュタグや注意書きなど、カード以外でも使う） */
   --pink-border: #ffb3d1;
   --pink-text: #e0457b;
   --blue-border: #9edcf0;
   --blue-text: #1f8fb0;
-  --purple-border: #d4b8f0;
-  --purple-text: #8a4fc4;
+
+  /* メッセージカード6色（枠 / 文字）。オープニングのペンライトと同じ6色の色み。
+     文字は白いカードの上で読みやすい濃さ（コントラスト比 4.5 以上）にしている */
+  --card-pink-border: #ffb3d1;
+  --card-pink-text: #d1307f;
+  --card-sky-border: #9edcf0;
+  --card-sky-text: #1a7fa6;
+  --card-yellow-border: #ffd84a;
+  --card-yellow-text: #9a6a00;
+  --card-blue-border: #9db2ff;
+  --card-blue-text: #2f58d6;
+  --card-red-border: #ff9e94;
+  --card-red-text: #d2362a;
+  --card-white-border: #d9d6e6;
+  --card-white-text: #5f5a78;
 
   /* レイアウト */
   --header-h: 56px;
@@ -503,8 +516,8 @@ main {
    ========================================================= */
 .card {
   /* 色は --c-border / --c-text で切り替え */
-  --c-border: var(--pink-border);
-  --c-text: var(--pink-text);
+  --c-border: var(--card-pink-border);
+  --c-text: var(--card-pink-text);
   position: relative;
   width: var(--card-w);
   padding: 16px 20px;
@@ -519,9 +532,13 @@ main {
   transition: box-shadow 0.2s;
 }
 
-.card--pink   { --c-border: var(--pink-border);   --c-text: var(--pink-text); }
-.card--blue   { --c-border: var(--blue-border);   --c-text: var(--blue-text); }
-.card--purple { --c-border: var(--purple-border); --c-text: var(--purple-text); }
+/* 6色（並び順は js/messages.js の COLORS） */
+.card--pink   { --c-border: var(--card-pink-border);   --c-text: var(--card-pink-text); }
+.card--sky    { --c-border: var(--card-sky-border);    --c-text: var(--card-sky-text); }
+.card--yellow { --c-border: var(--card-yellow-border); --c-text: var(--card-yellow-text); }
+.card--blue   { --c-border: var(--card-blue-border);   --c-text: var(--card-blue-text); }
+.card--red    { --c-border: var(--card-red-border);    --c-text: var(--card-red-text); }
+.card--white  { --c-border: var(--card-white-border);  --c-text: var(--card-white-text); }
 
 .card:hover,
 .card:focus-visible {

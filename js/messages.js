@@ -25,7 +25,8 @@
 const MessageFlow = (() => {
   'use strict';
 
-  const COLORS = ['pink', 'blue', 'purple'];
+  // カードの6色（css/style.css の .card--〇〇）。隣り合うカードが似た色にならない順番
+  const COLORS = ['pink', 'sky', 'yellow', 'blue', 'red', 'white'];
   const mqPc = window.matchMedia('(min-width: 768px)');
   const mqReduced = window.matchMedia('(prefers-reduced-motion: reduce)');
 
@@ -355,7 +356,7 @@ const MessageFlow = (() => {
       return null;
     }
 
-    // 読み込むたびにシャッフルし、色（ピンク→水色→紫）を順番に割り当てる
+    // 読み込むたびにシャッフルし、色（COLORS の6色）を順番に割り当てる（一覧表示で使う）
     const list = shuffle(messages).map((m, i) => ({ ...m, color: i % COLORS.length }));
 
     const render = () => {
@@ -368,7 +369,7 @@ const MessageFlow = (() => {
       const gapAvg = parseFloat(getComputedStyle(container).getPropertyValue('--gap-avg')) || 40;
 
       // 各レーンへ均等に振り分け
-      // レーン数と色数が同じ（3）だと1レーンが1色になってしまうため、
+      // 全体の順番で色を決めると、レーン数によっては1レーンが同じ色ばかりになるため、
       // 色はレーンの中での順番とレーン番号から決め直す
       const buckets = Array.from({ length: laneCount }, () => []);
       list.forEach((m, i) => {
