@@ -59,8 +59,18 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           export GIT_TERMINAL_PROMPT=0
-          if ! git fetch --quiet "https://oauth2:${TOKEN}@github.com/${RELEASE_REPO}.git" "${RELEASE_BRANCH}"; then
-            echo "::error::鍵はありますが、非公開リポジトリを読めませんでした。トークンの対象リポジトリ（KannkannBirthday2026-release）と Contents: Read-only の権限を確認してください"
+          # 鍵で非公開リポジトリが見えるかを確認（401=鍵が無効・古い／404=鍵は有効だが対象リポジトリが違う）
+          code=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer ${TOKEN}" "https://api.github.com/repos/${RELEASE_REPO}")
+          echo "非公開リポジトリの確認: ${code}"
+          if [ "$code" = "401" ]; then
+            echo "::error::鍵が無効です（${code}）。作り直した新しいトークンを RELEASE_REPO_TOKEN に登録し直してください"
+            exit 1
+          elif [ "$code" != "200" ]; then
+            echo "::error::鍵は有効ですが、非公開リポジトリが見えません（${code}）。トークンの Repository access で KannkannBirthday2026-release を選んでいるか確認してください"
+            exit 1
+          fi
+          if ! git fetch --quiet "https://${GITHUB_REPOSITORY_OWNER}:${TOKEN}@github.com/${RELEASE_REPO}.git" "${RELEASE_BRANCH}"; then
+            echo "::error::リポジトリは見えますが、中身を読めませんでした。トークンの権限で Contents が Read-only になっているか確認してください"
             exit 1
           fi
           git log --oneline -1 FETCH_HEAD
