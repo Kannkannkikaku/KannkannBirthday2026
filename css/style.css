@@ -41,8 +41,8 @@
   /* レイアウト */
   --header-h: 56px;
   --bottom-nav-h: 64px;
-  --card-w: 260px;        /* スマホのカード幅 */
-  --gap-avg: 30px;        /* カード同士の平均のすき間（実際の間隔はJSでばらつかせる） */
+  --card-w: 200px;        /* スマホのカード幅 */
+  --gap-avg: 24px;        /* カード同士の平均のすき間（実際の間隔はJSでばらつかせる） */
 
   --font: "M PLUS Rounded 1c", "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif,
           "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji";
@@ -50,8 +50,8 @@
 
 @media (min-width: 768px) {
   :root {
-    --card-w: 360px;
-    --gap-avg: 40px;
+    --card-w: 320px;
+    --gap-avg: 36px;
   }
 }
 
@@ -520,7 +520,7 @@ main {
   --c-text: var(--card-pink-text);
   position: relative;
   width: var(--card-w);
-  padding: 16px 20px;
+  padding: 10px 12px;
   border: 1.5px solid var(--c-border);
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.9);
@@ -552,9 +552,9 @@ main {
 
 .card__text {
   margin: 0;
-  font-size: 14px;          /* スマホは少し小さめ（PCは16px） */
+  font-size: 12px;          /* スマホ。PCは14px（長いメッセージでも重なりすぎないよう小さめ） */
   font-weight: 700;
-  line-height: 1.8;
+  line-height: 1.65;
   text-align: left;
   /* 改行をそのまま表示・長い英数字も折り返す */
   white-space: pre-wrap;
@@ -562,8 +562,8 @@ main {
 }
 
 .card__name {
-  margin: 8px 0 0;
-  font-size: 13px;
+  margin: 6px 0 0;
+  font-size: 11px;
   font-weight: 700;
   text-align: right;
   opacity: 0.75;
@@ -572,32 +572,43 @@ main {
 
 @media (min-width: 768px) {
   .card {
-    padding: 20px 24px;
+    padding: 14px 16px;
   }
 
   .card__text {
-    font-size: 16px;
-    line-height: 1.9;
+    font-size: 13px;
+    line-height: 1.7;
+  }
+
+  .card__name {
+    font-size: 12px;
   }
 }
 
 /* トップページ用の小さいカード */
 .flow--compact {
-  --card-w: 240px;
-  --gap-avg: 30px;
+  --card-w: 190px;
+  --gap-avg: 24px;
 }
 
 .flow--compact .card {
-  padding: 14px 18px;
+  padding: 10px 12px;
 }
 
 .flow--compact .card__text {
-  font-size: 13px;
-  line-height: 1.75;
+  font-size: 12px;
+  line-height: 1.6;
 }
 
 .flow--compact .card__name {
-  font-size: 12px;
+  font-size: 11px;
+}
+
+@media (min-width: 768px) {
+  .flow--compact {
+    --card-w: 230px;
+    --gap-avg: 30px;
+  }
 }
 
 /* =========================================================
@@ -740,7 +751,7 @@ body.is-paused .track {
 
 /* --- トップページの縮小版 --- */
 .flow--compact {
-  height: 420px;
+  height: 480px;
   padding: 48px 0;
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
   mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
@@ -748,7 +759,7 @@ body.is-paused .track {
 
 @media (min-width: 768px) {
   .flow--compact {
-    height: 400px;
+    height: 460px;
   }
 }
 
@@ -810,6 +821,7 @@ body.is-paused .track {
 
 .modal__card .card__text {
   font-size: 18px;
+  line-height: 1.9;
 }
 
 .modal__card .card__name {
