@@ -52,11 +52,22 @@ jobs:
         env:
           TOKEN: ${{ secrets.RELEASE_REPO_TOKEN }}
         run: |
+          if [ -z "${TOKEN}" ]; then
+            echo "::error::鍵が見つかりません。Settings → Secrets and variables → Actions に RELEASE_REPO_TOKEN が登録されているか確認してください"
+            exit 1
+          fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git fetch --quiet "https://x-access-token:${TOKEN}@github.com/${RELEASE_REPO}.git" "${RELEASE_BRANCH}"
+          export GIT_TERMINAL_PROMPT=0
+          if ! git fetch --quiet "https://oauth2:${TOKEN}@github.com/${RELEASE_REPO}.git" "${RELEASE_BRANCH}"; then
+            echo "::error::鍵はありますが、非公開リポジトリを読めませんでした。トークンの対象リポジトリ（KannkannBirthday2026-release）と Contents: Read-only の権限を確認してください"
+            exit 1
+          fi
           git log --oneline -1 FETCH_HEAD
-          git cherry-pick FETCH_HEAD
+          if ! git cherry-pick FETCH_HEAD; then
+            echo "::error::本番用のコミットを取り込めませんでした（競合）。main が変更されていないか確認してください"
+            exit 1
+          fi
           git log --oneline -2
 
       - name: 公開できるか確認（dry_run）
