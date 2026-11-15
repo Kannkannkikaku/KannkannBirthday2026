@@ -44,7 +44,7 @@
     op.setAttribute('aria-hidden', 'true');
     // 中身は固定の文字だけ（外から入ってくるデータは含まない）
     op.innerHTML = `<p class="op-call">まもなく開演です</p><div class="op-beams"></div><div class="op-flash"></div>
-      <div class="op-title"><span>KAN KANNA BIRTHDAY 2026</span><strong>菅叶和<br>応援広告企画</strong></div>
+      <div class="op-title"><span>KAN KANNA BIRTHDAY 2026</span><strong>菅叶和<br>応援広告企画2026</strong></div>
       <button class="op-skip" type="button">スキップ</button>`;
 
     const beams = op.querySelector('.op-beams');
