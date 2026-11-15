@@ -1,0 +1,88 @@
+# 11/16 12:00（日本時間）に本番用の内容へ自動で切り替える
+# ・本番用のコミットは非公開リポジトリ（KannkannBirthday2026-release）の release-1116 ブランチに置いてある
+# ・開始が遅れても間に合うよう 11:17 ごろに起動し、12:00:00 まで待ってから取り込む
+# ・すでに取り込み済みなら何もしない（2回目の予約・手動実行が重なっても安全）
+# ・手動実行（Run workflow）でも 12:00 より前は待つ。dry_run=true なら取り込みの確認だけで公開しない
+name: 本番切り替え（11/16 12:00）
+
+on:
+  schedule:
+    - cron: '17 2 16 11 *'   # 11/16 02:17 UTC = 11:17 JST
+    - cron: '43 2 16 11 *'   # 予備：11:43 JST
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: '確認だけ（公開しない）'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  pages: write
+
+concurrency:
+  group: release-switch
+  cancel-in-progress: false
+
+env:
+  RELEASE_AT_UTC: '2026-11-16 03:00:00'
+  RELEASE_REPO: Kannkannkikaku/KannkannBirthday2026-release
+  RELEASE_BRANCH: release-1116
+
+jobs:
+  switch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: 取り込み済みか確認
+        id: check
+        run: |
+          if git log --format=%s | grep -q '^\[本番用\]'; then
+            echo "すでに本番用に切り替わっています"
+            echo "done=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: 本番用のコミットを取得して取り込む（まだ公開しない）
+        if: steps.check.outputs.done != 'true'
+        env:
+          TOKEN: ${{ secrets.RELEASE_REPO_TOKEN }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch --quiet "https://x-access-token:${TOKEN}@github.com/${RELEASE_REPO}.git" "${RELEASE_BRANCH}"
+          git log --oneline -1 FETCH_HEAD
+          git cherry-pick FETCH_HEAD
+          git log --oneline -2
+
+      - name: 公開できるか確認（dry_run）
+        if: steps.check.outputs.done != 'true' && inputs.dry_run
+        run: |
+          git push --dry-run origin HEAD:main
+          echo "確認OK（dry_run のため公開はしていません）"
+
+      - name: 12:00 まで待つ
+        if: steps.check.outputs.done != 'true' && !inputs.dry_run
+        run: |
+          target=$(date -u -d "${RELEASE_AT_UTC}" +%s)
+          now=$(date -u +%s)
+          if [ "$now" -lt "$target" ]; then
+            echo "$((target - now)) 秒待ちます"
+            sleep $((target - now))
+          fi
+          date
+
+      - name: 公開する
+        if: steps.check.outputs.done != 'true' && !inputs.dry_run
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git push origin HEAD:main
+          # 念のため GitHub Pages の再構築も依頼する
+          curl -s -X POST -H "Authorization: Bearer ${GH_TOKEN}" -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/pages/builds" || true
+          date
