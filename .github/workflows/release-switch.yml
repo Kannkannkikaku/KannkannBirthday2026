@@ -9,6 +9,8 @@ on:
   schedule:
     - cron: '17 2 16 11 *'   # 11/16 02:17 UTC = 11:17 JST
     - cron: '43 2 16 11 *'   # 予備：11:43 JST
+    - cron: '10 3 16 11 *'   # 予備：12:10 JST（それまでに切り替わっていなければ、すぐ公開）
+    - cron: '30 3 16 11 *'   # 予備：12:30 JST
   workflow_dispatch:
     inputs:
       dry_run:
