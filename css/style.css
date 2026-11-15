@@ -201,18 +201,18 @@ a {
 /* =========================================================
    ヘッダー・メニュー
    ========================================================= */
+/* ヘッダーは固定しない（スクロールすると一緒に流れて見えなくなる）。
+   メニューボタンだけ右上に固定する。
+   ※ backdrop-filter を付けると中の固定ボタンがヘッダーに閉じ込められるので使わない */
 .site-header {
-  position: sticky;
-  top: 0;
+  position: relative;
   z-index: 50;
   height: var(--header-h);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 16px;
+  padding: 0 72px 0 16px;
   background: rgba(255, 255, 255, 0.72);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
   box-shadow: 0 1px 8px rgba(255, 79, 154, 0.08);
 }
 
@@ -234,31 +234,40 @@ a {
 }
 
 /* ハンバーガーボタン（CSSで描く3本線） */
+/* 右上に固定した丸いメニューボタン（ピンクのグラデーションに白い線） */
 .menu-btn {
-  position: relative;
+  position: fixed;
+  top: 6px;
+  right: 10px;
   z-index: 70;
-  flex: none;
   width: 44px;
   height: 44px;
-  border: 0;
+  border: 2px solid #fff;
   border-radius: 50%;
-  background: transparent;
+  background: linear-gradient(135deg, #ff8fb3, #ff4f9a);
+  box-shadow: 0 4px 12px rgba(255, 79, 154, 0.35);
   cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.menu-btn:hover {
+  transform: scale(1.06);
+  box-shadow: 0 6px 16px rgba(255, 79, 154, 0.45);
 }
 
 .menu-btn span {
   position: absolute;
-  left: 11px;
-  width: 22px;
-  height: 2.5px;
+  left: 10px;
+  width: 20px;
+  height: 2px;
   border-radius: 2px;
-  background: var(--accent);
+  background: #fff;
   transition: transform 0.3s, opacity 0.3s;
 }
 
-.menu-btn span:nth-child(1) { top: 14px; }
-.menu-btn span:nth-child(2) { top: 21px; }
-.menu-btn span:nth-child(3) { top: 28px; }
+.menu-btn span:nth-child(1) { top: 12px; }
+.menu-btn span:nth-child(2) { top: 19px; }
+.menu-btn span:nth-child(3) { top: 26px; }
 
 /* 開いているときは × に変形 */
 .menu-btn[aria-expanded="true"] span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
