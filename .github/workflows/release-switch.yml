@@ -69,7 +69,8 @@ jobs:
             echo "::error::鍵は有効ですが、非公開リポジトリが見えません（${code}）。トークンの Repository access で KannkannBirthday2026-release を選んでいるか確認してください"
             exit 1
           fi
-          if ! git fetch --quiet "https://${GITHUB_REPOSITORY_OWNER}:${TOKEN}@github.com/${RELEASE_REPO}.git" "${RELEASE_BRANCH}"; then
+          # checkout が設定した公開リポジトリ用の認証ヘッダーを、この取得のときだけ外す（外さないと鍵が使われない）
+          if ! git -c "http.https://github.com/.extraheader=" fetch --quiet "https://${GITHUB_REPOSITORY_OWNER}:${TOKEN}@github.com/${RELEASE_REPO}.git" "${RELEASE_BRANCH}"; then
             echo "::error::リポジトリは見えますが、中身を読めませんでした。トークンの権限で Contents が Read-only になっているか確認してください"
             exit 1
           fi
